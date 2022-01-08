@@ -1,15 +1,31 @@
 #include "EventPtr.h"
 
-EventPtr::EventPtr()
+Vessel::Vessel(int _id, double _x, double _y, double _vx, double _vy, double _r) {
+	id = _id;
+	loc = Point(_x, _y);
+	vx = _vx;
+	vy = _vy;
+	r = _r;
+}
+Vessel* Vessel::predictLoc(int futureT) {
+	return new Vessel(id, (loc.x + (futureT * vx)), (loc.y + (futureT * vy)),
+		vx, vy, r);
+}
+
+Event::Event()
 {
 }
 
-EventPtr::EventPtr(int _t, int _id, double _vx, double _vy, double _x, double _y)
+Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y)
 {
 	t = _t;
 	id = _id;
 	vx = _vx;
 	vy = _vy;
-	x = _x;
-	y = _y;
+	loc = Point(_x, _y);
+}
+
+Event* Event::predictLoc(int futureT) {
+	return new Event(t + futureT, id, (loc.x + (futureT * vx)), (loc.y + (futureT * vy)),
+		vx, vy);
 }

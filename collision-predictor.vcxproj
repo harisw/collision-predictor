@@ -143,15 +143,20 @@
     <ClCompile Include="collision-predictor.cpp" />
     <ClCompile Include="EventPtr.cpp" />
     <ClCompile Include="ICMSCalculator.cpp" />
+    <ClCompile Include="PredictUtil.cpp" />
     <ClCompile Include="TPRNode.cpp" />
     <ClCompile Include="TPRTree.cpp" />
+    <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CEntry.h" />
     <ClInclude Include="EventPtr.h" />
     <ClInclude Include="ICMSCalculator.h" />
+    <ClInclude Include="Point.h" />
+    <ClInclude Include="PredictUtil.h" />
     <ClInclude Include="TPRNode.h" />
     <ClInclude Include="TPRTree.h" />
+    <ClInclude Include="Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
