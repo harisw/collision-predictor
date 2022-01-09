@@ -190,6 +190,7 @@ void updateVesselLoc() {
 		ourVessels[j]->loc = newLoc;
 	}
 }
+
 void naiveMethod() {
 	cout << endl << "Naive" << endl;
 	int currentT = 0;
@@ -197,7 +198,6 @@ void naiveMethod() {
 	unsigned long curDuration = 0;
 	while (currentT < maxT) {
 		auto start = high_resolution_clock::now();
-
 		for(int j=0; j<inputEvents[currentT].size(); j++) {
 			for (int k = 0; k < ourVessels.size(); k++) {
 				double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][j]->loc);
@@ -217,7 +217,6 @@ void naiveMethod() {
 }
 void TPRMethod() {
 	cout << endl << "TPR Only" << endl;
-
 	int currentT = 0;
 	int maxT = MAX_T;
 	vector<int> inputIDs;
@@ -226,6 +225,7 @@ void TPRMethod() {
 	//vector<Vessel*> predictedMBRs;
 	TPRTree* tree = nullptr;
 	unsigned long curDuration = 0;
+	unsigned long total = 0;
 	while (currentT < maxT) {
 		auto start = high_resolution_clock::now();
 		if (currentT % I == 0) {
@@ -253,27 +253,19 @@ void TPRMethod() {
 			}
 
 		}
-		//if (!candidateIDs.empty()) {
-		//	for (itt = candidateIDs.begin(); itt != candidateIDs.end(); itt++) {
-		//		if (*itt >= inputEvents[currentT].size())
-		//			continue;
-		//		for (int k = 0; k < ourVessels.size(); k++) {
-		//			double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][*itt]->loc);
-		//			/*if (dist <= ourVessels[k]->r)
-		//				cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][*itt]->id << endl;*/
-		//		}
-		//	}
-		//}
+
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		curDuration += duration.count();
 		if (currentT > 0 && currentT % 10 == 0) {
+			total += (curDuration / 10);
 			cout << "#" << currentT << " Time taken by cycle " << currentT / 10 << ":  " << curDuration / 10 << endl;
 			curDuration = 0;
 		}
 		currentT++;
 		updateVesselLoc();
 	}
+	cout << " Total duration " << total << endl;
 }
 
 void hybridMethod() {
@@ -287,6 +279,7 @@ void hybridMethod() {
 	vector<Vessel*> predictedMBRs;
 	TPRTree* tree = nullptr;
 	unsigned long curDuration = 0;
+	unsigned long total = 0;
 	while (currentT < maxT) {
 		auto start = high_resolution_clock::now();
 
@@ -294,7 +287,6 @@ void hybridMethod() {
 			inputIDs.empty();
 			inputIDs = PredictUtil::trajectoryFilter(ourVessels, inputEvents[currentT]);
 			//predictedMBRs = PredictUtil::predictMBRs(ourVessels);
-
 			tree = new TPRTree();
 
 			for (int j = 0; j < inputIDs.size(); j++) {
@@ -311,18 +303,15 @@ void hybridMethod() {
 				vector<CEntry> tempCandidates;
 				Vessel* currArea = ourVessels[j];
 				tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r + (SMALL_I * sqrt(pow(currArea->vx, 2) +
-					pow(currArea->vy, 2))), tempCandidates, currentT % 10);
-
+					pow(currArea->vy, 2))), tempCandidates, currentT % I);
 				if (tempCandidates.empty())
 					continue;
 
 				candidateIDs.push_back({ tempCandidates[0].m_id });
 				for (int k = 1; k < tempCandidates.size(); k++)
 					candidateIDs[j].push_back(tempCandidates[k].m_id);
-
 			}
 		}
-
 
 		if (!candidateIDs.empty()) {
 			//for (itt = candidateIDs.begin(); itt != candidateIDs.end(); itt++) {
@@ -347,6 +336,7 @@ void hybridMethod() {
 		auto duration = duration_cast<microseconds>(stop - start);
 		curDuration += duration.count();
 		if (currentT > 0 && currentT % 10 == 0) {
+			total += (curDuration / 10);
 			cout << "#" << currentT << " Time taken by cycle " << currentT / 10 << ":  " << curDuration / 10 << endl;
 			curDuration = 0;
 		}
@@ -354,6 +344,7 @@ void hybridMethod() {
 		currentT++;
 		updateVesselLoc();
 	}
+	cout << " Total duration " << total << endl;
 }
 int main()
 {

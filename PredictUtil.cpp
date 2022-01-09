@@ -4,7 +4,8 @@
 #include "EventPtr.h"
 #include "Util.h"
 #define PI 3.1416
-#define I 10
+#define I 15
+#define SMALL_I 5
 
 //vector<Vessel*> PredictUtil::predictBufferZones(vector<Vessel*>& inputVessel)
 //{
