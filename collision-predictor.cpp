@@ -18,11 +18,12 @@ using namespace std::chrono;
 #include "PredictUtil.h"
 #include "Util.h"
 #define VESSEL_FILENAME "vessel_100.csv"
-#define FILENAME "events_Approach - Stop1000.txt"
-#define MAX_T 100
+#define FILENAME "events_Approach - U Turn502.txt"
+#define MAX_T 50
 #define I 15
 #define SMALL_I 5
-
+#define CALCULATE_INTERVAL 5
+//#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
 vector<Vessel*> ourVessels;
 int numOfObj;
@@ -31,7 +32,6 @@ int numOfVessel;
 void importVesselData() {
 	string filename(VESSEL_FILENAME);
 	fstream newfile;
-
 	newfile.open(filename, ios::in); //open a file to perform read operation using file object
 	if (newfile.is_open()) {   //checking whether the file is open
 		string tp;
@@ -40,20 +40,12 @@ void importVesselData() {
 		collectedEvents.push_back({});
 		while (getline(newfile, tp)) { //read data from file object and put it into string.
 			istringstream tokenizer(tp);
-
 			getline(tokenizer, token, '|');
-
 			getline(tokenizer, token, '|');
 			int obj_id = stoi(token);
-
-			getline(tokenizer, x, '|');
-			getline(tokenizer, y, '|');
-
-			getline(tokenizer, vx, '|');
-			getline(tokenizer, vy, '|');
-
+			getline(tokenizer, x, '|');getline(tokenizer, y, '|');
+			getline(tokenizer, vx, '|');getline(tokenizer, vy, '|');
 			getline(tokenizer, r, '|');
-			
 			Vessel* currentVessel = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
 			ourVessels.push_back(currentVessel);
 		}
@@ -61,32 +53,27 @@ void importVesselData() {
 		newfile.close(); //close the file object.
 	}
 	else {
-		cerr << "Error Opening File!!" << endl;
-		return;
+		cerr << "Error Opening File!!" << endl;return;
 	}
 }
 
 void importGeneratedData() {
 	string filename(FILENAME);
 	fstream newfile;
-
 	newfile.open(filename, ios::in); //open a file to perform read operation using file object
 	if (newfile.is_open()) {   //checking whether the file is open
 		string tp;
 		int global_itt = 0;
 		int obj_id;
 		int obj_count = 0;
-
 		string token, vx, vy, x, y;
 		inputEvents.push_back({});
 		while (getline(newfile, tp)) { //read data from file object and put it into string.
 			istringstream tokenizer(tp);
-
 			getline(tokenizer, token, '|'); //READ timestamp
 			if (stoi(token) > global_itt) {
 				if (global_itt >= MAX_T)
 					break;
-
 				global_itt++;
 				inputEvents.push_back({});
 			}
@@ -109,9 +96,7 @@ void importGeneratedData() {
 		newfile.close(); //close the file object.
 	}
 	else {
-		cerr << "Error Opening File!!" << endl;
-		return;
-	}
+		cerr << "Error Opening File!!" << endl;return; }
 }
 
 void importAISData() {
@@ -136,7 +121,6 @@ void importAISData() {
 			istringstream tokenizer(tp);
 
 			getline(tokenizer, token, '|'); //skip first id
-
 			getline(tokenizer, token, '|'); //get timestamp
 
 			if (first) {
@@ -196,24 +180,36 @@ void naiveMethod() {
 	int currentT = 0;
 	int maxT = MAX_T;
 	unsigned long curDuration = 0;
+	unsigned long total = 0;	
 	while (currentT < maxT) {
 		auto start = high_resolution_clock::now();
 		for(int j=0; j<inputEvents[currentT].size(); j++) {
 			for (int k = 0; k < ourVessels.size(); k++) {
 				double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][j]->loc);
-				/*if (dist <= ourVessels[k]->r)
-					cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][j]->id << endl;*/			}
+				if (dist <= ourVessels[k]->r)
+					cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][j]->id << endl;
+			}
 		}
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		curDuration += duration.count();
-		if (currentT > 0 && currentT % 10 == 0) {
-			cout << "Time taken by cycle " << currentT / 10 << ":  " << curDuration / 10 << endl;
+#ifdef SHORT_EXP
+		total += curDuration;
+		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
+		curDuration = 0;
+#endif // SHORT_EXP
+
+#ifndef SHORT_EXP
+		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
+			total += (curDuration / CALCULATE_INTERVAL);
+			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
 			curDuration = 0;
 		}
+#endif
 		currentT++;
 		updateVesselLoc();
 	}
+	cout << " Total duration " << total << endl;
 }
 void TPRMethod() {
 	cout << endl << "TPR Only" << endl;
@@ -222,18 +218,18 @@ void TPRMethod() {
 	vector<int> inputIDs;
 	set<int> candidateIDs;
 	set<int>::iterator itt;
-	//vector<Vessel*> predictedMBRs;
 	TPRTree* tree = nullptr;
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
+#ifndef SHORT_EXP
 		auto start = high_resolution_clock::now();
+#endif // SHORT_EXP
+
 		if (currentT % I == 0) {
 			inputIDs.empty();
 			inputIDs = PredictUtil::trajectoryFilter(ourVessels, inputEvents[currentT]);
-			//predictedMBRs = PredictUtil::predictMBRs(ourVessels);
 			tree = new TPRTree();
-
 			for (int j = 0; j < inputIDs.size(); j++) {
 				if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;
@@ -242,6 +238,9 @@ void TPRMethod() {
 				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0));
 			}
 		}
+#ifdef SHORT_EXP
+		auto start = high_resolution_clock::now();
+#endif // SHORT_EXP
 
 		for (int j = 0; j < ourVessels.size(); j++) {
 			vector<CEntry> tempCandidates;
@@ -249,7 +248,6 @@ void TPRMethod() {
 			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % 10);
 			for (int k = 0; k < tempCandidates.size(); k++) {
 				cout << "COLLISION Vessel " << currArea->id << " and obj #" << tempCandidates[k].m_id << endl;
-				//candidateIDs.insert(tempCandidates[k].m_id);
 			}
 
 		}
@@ -257,11 +255,19 @@ void TPRMethod() {
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		curDuration += duration.count();
-		if (currentT > 0 && currentT % 10 == 0) {
-			total += (curDuration / 10);
-			cout << "#" << currentT << " Time taken by cycle " << currentT / 10 << ":  " << curDuration / 10 << endl;
+#ifdef SHORT_EXP
+		total += curDuration;
+		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
+		curDuration = 0;
+#endif // SHORT_EXP
+
+#ifndef SHORT_EXP
+		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
+			total += (curDuration / CALCULATE_INTERVAL);
+			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
 			curDuration = 0;
 		}
+#endif
 		currentT++;
 		updateVesselLoc();
 	}
@@ -273,7 +279,6 @@ void hybridMethod() {
 	int currentT = 0;
 	int maxT = MAX_T;
 	vector<int> inputIDs;
-	//set<int> candidateIDs;
 	vector< vector<int> > candidateIDs;
 	set<int>::iterator itt;
 	vector<Vessel*> predictedMBRs;
@@ -281,23 +286,26 @@ void hybridMethod() {
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
+#ifndef SHORT_EXP
 		auto start = high_resolution_clock::now();
+#endif // SHORT_EXP
 
 		if (currentT % I == 0) {
 			inputIDs.empty();
 			inputIDs = PredictUtil::trajectoryFilter(ourVessels, inputEvents[currentT]);
-			//predictedMBRs = PredictUtil::predictMBRs(ourVessels);
 			tree = new TPRTree();
 
 			for (int j = 0; j < inputIDs.size(); j++) {
 				if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;
-
 				Event* ev = inputEvents[currentT][inputIDs[j]];
 				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0));
 			}
 		}
 
+#ifdef SHORT_EXP
+		auto start = high_resolution_clock::now();
+#endif
 		if (currentT % SMALL_I == 0) {
 			for (int j = 0; j < ourVessels.size(); j++) {
 				vector<CEntry> tempCandidates;
@@ -313,17 +321,8 @@ void hybridMethod() {
 			}
 		}
 
-		if (!candidateIDs.empty()) {
-			//for (itt = candidateIDs.begin(); itt != candidateIDs.end(); itt++) {
-			//	if (*itt >= inputEvents[currentT].size())
-			//		continue;
 
-			//	for (int k = 0; k < ourVessels.size(); k++) {
-			//		double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][*itt]->loc);
-			//		/*if (dist <= ourVessels[k]->r)
-			//			cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][*itt]->id << endl;*/
-			//	}
-			//}
+		if (!candidateIDs.empty()) {
 			for (int j = 0; j < candidateIDs.size(); j++) {	//FOR VESS
 				for (int k = 0; k < candidateIDs[j].size(); k++) {	//FOR OBJ
 					double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
@@ -335,17 +334,25 @@ void hybridMethod() {
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		curDuration += duration.count();
-		if (currentT > 0 && currentT % 10 == 0) {
-			total += (curDuration / 10);
-			cout << "#" << currentT << " Time taken by cycle " << currentT / 10 << ":  " << curDuration / 10 << endl;
+#ifdef SHORT_EXP
+		total += curDuration;
+		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
+		curDuration = 0;
+#endif // SHORT_EXP
+
+#ifndef SHORT_EXP
+		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
+			total += (curDuration / CALCULATE_INTERVAL);
+			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
 			curDuration = 0;
 		}
-
+#endif
 		currentT++;
 		updateVesselLoc();
 	}
 	cout << " Total duration " << total << endl;
 }
+
 int main()
 {
 	importVesselData();
