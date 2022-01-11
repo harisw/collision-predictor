@@ -18,12 +18,14 @@ using namespace std::chrono;
 #include "PredictUtil.h"
 #include "Util.h"
 #define VESSEL_FILENAME "vessel_AIS.csv"
-#define FILENAME "events_Approach - U Turn502.txt"
+#define FILENAME "refined_events_AIS.txt"
+//#define FILENAME "events_Approach - U Turn502.txt"
 #define MAX_T 50
 #define I 15
 #define SMALL_I 5
 #define CALCULATE_INTERVAL 5
-//#define SHORT_EXP
+//#define SHOW_WARN 1
+#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
 vector<Vessel*> ourVessels;
 int numOfObj;
@@ -215,8 +217,10 @@ void naiveMethod() {
 		for(int j=0; j<inputEvents[currentT].size(); j++) {
 			for (int k = 0; k < ourVessels.size(); k++) {
 				double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][j]->loc);
-				if (dist <= ourVessels[k]->r)
-					cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][j]->id << endl;
+#ifdef SHOW_WARN
+			if (dist <= ourVessels[k]->r)
+				cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][j]->id << endl;
+#endif // SHOW_WARN
 			}
 		}
 		auto stop = high_resolution_clock::now();
@@ -276,7 +280,9 @@ void TPRMethod() {
 			Vessel* currArea = ourVessels[j];
 			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % 10);
 			for (int k = 0; k < tempCandidates.size(); k++) {
+#ifdef SHOW_WARN
 				cout << "COLLISION Vessel " << currArea->id << " and obj #" << tempCandidates[k].m_id << endl;
+#endif // SHOW_WARN
 			}
 
 		}
@@ -309,6 +315,7 @@ void hybridMethod() {
 	int maxT = MAX_T;
 	vector<int> inputIDs;
 	vector< vector<int> > candidateIDs;
+	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
 	set<int>::iterator itt;
 	vector<Vessel*> predictedMBRs;
 	TPRTree* tree = nullptr;
@@ -344,7 +351,7 @@ void hybridMethod() {
 				if (tempCandidates.empty())
 					continue;
 
-				candidateIDs.push_back({ tempCandidates[0].m_id });
+				candidateIDs[j].push_back({ tempCandidates[0].m_id });
 				for (int k = 1; k < tempCandidates.size(); k++)
 					candidateIDs[j].push_back(tempCandidates[k].m_id);
 			}
@@ -355,8 +362,11 @@ void hybridMethod() {
 			for (int j = 0; j < candidateIDs.size(); j++) {	//FOR VESS
 				for (int k = 0; k < candidateIDs[j].size(); k++) {	//FOR OBJ
 					double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
+#ifdef SHOW_WARN
 					if (dist <= ourVessels[k]->r)
-						cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][*itt]->id << endl;
+						cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << 
+						inputEvents[currentT][candidateIDs[j][k]]->id << endl;
+#endif // SHOW_WARN
 				}
 			}
 		}
@@ -488,10 +498,10 @@ void refineAISData()
 int main()
 {
 	//importVesselData();
-	//importGeneratedData();
-	//naiveMethod();
-	//TPRMethod();
-	//hybridMethod();
-	//importVesselAIS();
-	refineAISData();
+	importVesselAIS();
+	importGeneratedData();
+	naiveMethod();
+	TPRMethod();
+	hybridMethod();
+	//refineAISData();
 }
