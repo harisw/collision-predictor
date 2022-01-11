@@ -17,7 +17,7 @@ using namespace std::chrono;
 #include "TPRTree.h"
 #include "PredictUtil.h"
 #include "Util.h"
-#define VESSEL_FILENAME "vessel_100.csv"
+#define VESSEL_FILENAME "vessel_AIS.csv"
 #define FILENAME "events_Approach - U Turn502.txt"
 #define MAX_T 50
 #define I 15
@@ -56,7 +56,6 @@ void importVesselData() {
 		cerr << "Error Opening File!!" << endl;return;
 	}
 }
-
 void importGeneratedData() {
 	string filename(FILENAME);
 	fstream newfile;
@@ -99,6 +98,36 @@ void importGeneratedData() {
 		cerr << "Error Opening File!!" << endl;return; }
 }
 
+void importVesselAIS() {
+	string filename(VESSEL_FILENAME);
+	fstream newfile;
+	newfile.open(filename, ios::in); //open a file to perform read operation using file object
+	if (newfile.is_open()) {   //checking whether the file is open
+		string tp;
+		string token, vx, vy, x, y, r;
+		getline(newfile, tp);	//skip header row
+		while (getline(newfile, tp)) { //read data from file object and put it into string.
+			istringstream tokenizer(tp);
+			getline(tokenizer, token, '|');
+			getline(tokenizer, x, '|'); getline(tokenizer, y, '|');
+			getline(tokenizer, token, '|');
+			int obj_id = stoi(token);
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer2(token);
+			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
+
+			getline(tokenizer, r, '|');
+			Vessel* currentVessel = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
+			ourVessels.push_back(currentVessel);
+		}
+		numOfVessel = ourVessels.size();
+		newfile.close(); //close the file object.
+	}
+	else {
+		cerr << "Error Opening File!!" << endl; return;
+	}
+}
 void importAISData() {
 	string filename("cleaned_AIS.csv");
 	fstream newfile;
@@ -353,11 +382,89 @@ void hybridMethod() {
 	cout << " Total duration " << total << endl;
 }
 
+
+void refineAISData()
+{
+	string filename("cleaned_AIS.csv");
+	fstream newfile;
+	newfile.open(filename, ios::in); //open a file to perform read operation using file object
+	if (newfile.is_open()) {   //checking whether the file is open
+		string tp;
+		int global_itt = 0;
+		int obj_id;
+		int obj_count = 0;
+
+		string token, vx, vy, x, y;
+		vector< vector<Event*> > collectedEvents = {};
+		collectedEvents.push_back({});
+
+		string currentT = "";
+		int collective_itt = 0;
+		bool first = true;
+		bool boolID[380] = { 0 };
+
+		while (getline(newfile, tp)) { //read data from file object and put it into string.
+			istringstream tokenizer(tp);
+
+			getline(tokenizer, token, '|'); //skip first id
+			getline(tokenizer, token, '|'); //get timestamp
+
+			if (first) {
+				currentT = token;
+				first = false;
+			}
+
+			if (token != currentT) {
+				currentT = token;
+				if (collective_itt == 5) {
+					collective_itt = 0;
+					global_itt++;
+					collectedEvents.push_back({});
+				}
+				else
+					collective_itt++;
+
+				if (global_itt >= 1000)
+					break;
+
+			}
+
+			getline(tokenizer, x, '|');
+			getline(tokenizer, y, '|');
+			getline(tokenizer, token, '|');
+			obj_id = stoi(token);
+			if (obj_id > obj_count) obj_count = obj_id;
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer2(token);
+			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
+
+
+			Event* currentEv = new Event(stoi(token), obj_id, stod(vx), stod(vy), stod(x), stod(y));
+			collectedEvents[global_itt].push_back(currentEv);
+			boolID[obj_id] = true;
+		}
+		numOfObj = obj_id;
+		newfile.close(); //close the file object.
+		for (int j = 0; j < 380; j++) {
+			if (!boolID[j])
+				cout << "empty on " << j << endl;
+		}
+	}
+	else {
+		cerr << "Error Opening File!!" << endl;
+		return;
+	}
+
+}
+
 int main()
 {
-	importVesselData();
-	importGeneratedData();
-	naiveMethod();
-	TPRMethod();
-	hybridMethod();
+	//importVesselData();
+	//importGeneratedData();
+	//naiveMethod();
+	//TPRMethod();
+	//hybridMethod();
+	importVesselAIS();
+	//refineAISData();
 }
