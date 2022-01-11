@@ -385,77 +385,104 @@ void hybridMethod() {
 
 void refineAISData()
 {
-	string filename("cleaned_AIS.csv");
+	string filename("events_AIS.csv");
 	fstream newfile;
 	newfile.open(filename, ios::in); //open a file to perform read operation using file object
+	vector< vector<Event*> > collectedEvents = {};
+	int objMax = 120;
 	if (newfile.is_open()) {   //checking whether the file is open
 		string tp;
 		int global_itt = 0;
+		int curr_itt;
 		int obj_id;
 		int obj_count = 0;
-
 		string token, vx, vy, x, y;
-		vector< vector<Event*> > collectedEvents = {};
-		collectedEvents.push_back({});
 
-		string currentT = "";
+		collectedEvents.push_back({});
+		collectedEvents[0].insert(collectedEvents[0].end(), objMax, nullptr);
+
 		int collective_itt = 0;
 		bool first = true;
 		bool boolID[380] = { 0 };
-
+		Event* defaultEv = nullptr;
+		getline(newfile, tp);		//skip header
 		while (getline(newfile, tp)) { //read data from file object and put it into string.
 			istringstream tokenizer(tp);
 
-			getline(tokenizer, token, '|'); //skip first id
 			getline(tokenizer, token, '|'); //get timestamp
-
-			if (first) {
-				currentT = token;
-				first = false;
-			}
-
-			if (token != currentT) {
-				currentT = token;
-				if (collective_itt == 5) {
-					collective_itt = 0;
-					global_itt++;
-					collectedEvents.push_back({});
+			curr_itt = stoi(token);
+			if (curr_itt > global_itt) {
+				for (int j = 0; j < objMax; j++) {
+					if (collectedEvents[global_itt][j] == nullptr) {
+						if (global_itt == 0) {
+							Event* currentEv = new Event(global_itt, j, defaultEv->vx, defaultEv->vy,
+								defaultEv->loc.x + defaultEv->vx, defaultEv->loc.y + defaultEv->vy);
+							collectedEvents[global_itt][j] = currentEv;
+						}
+						else {
+							Event* prevEv = collectedEvents[global_itt - 1][j];
+							Event* currentEv = new Event(global_itt, j, prevEv->vx, prevEv->vy,
+								prevEv->loc.x + prevEv->vx, prevEv->loc.y + prevEv->vy);
+							collectedEvents[global_itt][j] = currentEv;
+						}
+					}
 				}
-				else
-					collective_itt++;
-
-				if (global_itt >= 1000)
-					break;
-
+				collectedEvents.push_back({});
+				collectedEvents[curr_itt].insert(collectedEvents[curr_itt].end(), objMax+1, nullptr);
+				global_itt = curr_itt;
 			}
+			
+			if (global_itt >= 1000)
+				break;
 
 			getline(tokenizer, x, '|');
 			getline(tokenizer, y, '|');
 			getline(tokenizer, token, '|');
 			obj_id = stoi(token);
-			if (obj_id > obj_count) obj_count = obj_id;
-
+			
 			getline(tokenizer, token, '|');
 			istringstream tokenizer2(token);
 			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
 
 
-			Event* currentEv = new Event(stoi(token), obj_id, stod(vx), stod(vy), stod(x), stod(y));
-			collectedEvents[global_itt].push_back(currentEv);
-			boolID[obj_id] = true;
+			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y));
+			collectedEvents[global_itt][obj_id] = currentEv;
+			if (global_itt == 0)
+				defaultEv = currentEv;
 		}
 		numOfObj = obj_id;
 		newfile.close(); //close the file object.
-		for (int j = 0; j < 380; j++) {
-			if (!boolID[j])
-				cout << "empty on " << j << endl;
-		}
 	}
 	else {
 		cerr << "Error Opening File!!" << endl;
 		return;
 	}
+	//CREATE NEW FILE
 
+	ostringstream oss;
+	oss << "refined_events_AIS.txt";
+	filename = oss.str();
+
+	ofstream outfile;
+	outfile.open(filename, ofstream::trunc); // opens the file
+	if (!outfile) { // file couldn't be opened
+		cerr << "Error: file could not be opened" << endl;
+		exit(1);
+	}
+
+	int global_itt = 0;
+	int max_itt = 55;
+	double speedX, speedY;
+	while (true && global_itt < max_itt) {
+		bool hasFinished = true;
+		for (int i = 0; i < objMax; ++i) {
+			
+			outfile << global_itt << "|" << collectedEvents[global_itt][i]->id << "|" << collectedEvents[global_itt][i]->vx << ","
+				<< collectedEvents[global_itt][i]->vy << "|" << collectedEvents[global_itt][i]->loc.x << "," << collectedEvents[global_itt][i]->loc.y << endl;
+		}
+		global_itt++;
+	}
+	outfile.close();
 }
 
 int main()
@@ -465,6 +492,6 @@ int main()
 	//naiveMethod();
 	//TPRMethod();
 	//hybridMethod();
-	importVesselAIS();
-	//refineAISData();
+	//importVesselAIS();
+	refineAISData();
 }
