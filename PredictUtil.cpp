@@ -4,8 +4,6 @@
 #include "EventPtr.h"
 #include "Util.h"
 #define PI 3.1416
-#define I 15
-#define SMALL_I 5
 
 bool onSegment(Point p, Point q, Point r)
 {
@@ -42,8 +40,9 @@ vector<int> PredictUtil::trajectoryFilter(vector<Vessel*>& inputVessel, vector<E
 	vector<Event*> predictedObj;
 	vector<int> candidateID;
 
+
 	for (int i = 0; i < inputObj.size(); i++) {
-		Event* futureEv = inputObj[i]->predictLoc(I);
+		Event* futureEv = inputObj[i]->predictLoc(Util::interval);
 		predictedObj.push_back(futureEv);
 			
 		Point a = inputObj[i]->loc;
@@ -52,7 +51,7 @@ vector<int> PredictUtil::trajectoryFilter(vector<Vessel*>& inputVessel, vector<E
 		for (int j = 0; j < inputVessel.size(); j++) {
 			
 			double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
-			double stretchedBufferRadius = inputVessel[j]->r + (I * sqrt(pow(inputVessel[j]->vx, 2) + pow(inputVessel[j]->vy, 2)));
+			double stretchedBufferRadius = inputVessel[j]->filterRad;
 			if (dist <= stretchedBufferRadius) {
 				candidateID.push_back(inputObj[i]->id);
 				break;

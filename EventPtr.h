@@ -22,6 +22,8 @@ public:
 	double vx;
 	double vy;
 	double r;
+	double filterRad;
+	double queryRad;
 	Vessel(int _id, double _x, double _y, double _vx, double _vy, double _r);
 	Vessel* predictLoc(int futureT);
 };

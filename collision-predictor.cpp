@@ -17,15 +17,20 @@ using namespace std::chrono;
 #include "TPRTree.h"
 #include "PredictUtil.h"
 #include "Util.h"
-#define VESSEL_FILENAME "vessel_AIS.csv"
-#define FILENAME "refined_events_AIS.txt"
-//#define FILENAME "events_Approach - U Turn502.txt"
-#define MAX_T 50
-#define I 15
+//#define VESSEL_FILENAME "vessel_AIS.csv"
+//#define FILENAME "refined_events_AIS.txt"
+#define VESSEL_FILENAME "vessel_50.csv"
+#define FILENAME "events_Approach - U Turn502.txt"
+#define MAX_T 40		//GENERATED
+#define I 10
 #define SMALL_I 5
 #define CALCULATE_INTERVAL 5
+//#define MAX_T 40
+//#define I 15
+//#define SMALL_I 5
+//#define CALCULATE_INTERVAL 6
 //#define SHOW_WARN 1
-#define SHORT_EXP
+//#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
 vector<Vessel*> ourVessels;
 int numOfObj;
@@ -130,74 +135,6 @@ void importVesselAIS() {
 		cerr << "Error Opening File!!" << endl; return;
 	}
 }
-void importAISData() {
-	string filename("cleaned_AIS.csv");
-	fstream newfile;
-
-	newfile.open(filename, ios::in); //open a file to perform read operation using file object
-	if (newfile.is_open()) {   //checking whether the file is open
-		string tp;
-		int global_itt = 0;
-		int obj_id;
-		int obj_count = 0;
-
-		string token, vx, vy, x, y;
-		vector< vector<Event*> > collectedEvents = {};
-		collectedEvents.push_back({});
-
-		string currentT = "";
-		int collective_itt = 0;
-		bool first = true;
-		while (getline(newfile, tp)) { //read data from file object and put it into string.
-			istringstream tokenizer(tp);
-
-			getline(tokenizer, token, '|'); //skip first id
-			getline(tokenizer, token, '|'); //get timestamp
-
-			if (first) {
-				currentT = token;
-				first = false;
-			}
-
-			if (token != currentT) {
-				currentT = token;
-				if (collective_itt == 5) {
-					collective_itt = 0;
-					global_itt++;
-					collectedEvents.push_back({});
-				}
-				else
-					collective_itt++;
-
-				if (global_itt >= 1000)
-					break;
-
-			}
-
-			getline(tokenizer, x, '|');
-
-			getline(tokenizer, y, '|');
-
-			getline(tokenizer, token, '|');
-			obj_id = stoi(token);
-			if (obj_id > obj_count) obj_count = obj_id;
-
-			getline(tokenizer, token, '|');
-			istringstream tokenizer2(token);
-			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
-
-
-			Event* currentEv = new Event(stoi(token), obj_id, stod(vx), stod(vy), stod(x), stod(y));
-			collectedEvents[global_itt].push_back(currentEv);
-		}
-		numOfObj = obj_id;
-		newfile.close(); //close the file object.
-	}
-	else {
-		cerr << "Error Opening File!!" << endl;
-		return;
-	}
-}
 
 void updateVesselLoc() {
 	for (int j = 0; j < ourVessels.size(); j++) {
@@ -249,16 +186,11 @@ void TPRMethod() {
 	int currentT = 0;
 	int maxT = MAX_T;
 	vector<int> inputIDs;
-	set<int> candidateIDs;
-	set<int>::iterator itt;
 	TPRTree* tree = nullptr;
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
-#ifndef SHORT_EXP
 		auto start = high_resolution_clock::now();
-#endif // SHORT_EXP
-
 		if (currentT % I == 0) {
 			inputIDs.empty();
 			inputIDs = PredictUtil::trajectoryFilter(ourVessels, inputEvents[currentT]);
@@ -266,25 +198,20 @@ void TPRMethod() {
 			for (int j = 0; j < inputIDs.size(); j++) {
 				if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;
-
 				Event* ev = inputEvents[currentT][inputIDs[j]];
 				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0));
 			}
 		}
-#ifdef SHORT_EXP
-		auto start = high_resolution_clock::now();
-#endif // SHORT_EXP
 
 		for (int j = 0; j < ourVessels.size(); j++) {
 			vector<CEntry> tempCandidates;
 			Vessel* currArea = ourVessels[j];
-			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % 10);
+			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % I);
 			for (int k = 0; k < tempCandidates.size(); k++) {
 #ifdef SHOW_WARN
 				cout << "COLLISION Vessel " << currArea->id << " and obj #" << tempCandidates[k].m_id << endl;
 #endif // SHOW_WARN
 			}
-
 		}
 
 		auto stop = high_resolution_clock::now();
@@ -295,7 +222,6 @@ void TPRMethod() {
 		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
 		curDuration = 0;
 #endif // SHORT_EXP
-
 #ifndef SHORT_EXP
 		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
 			total += (curDuration / CALCULATE_INTERVAL);
@@ -316,21 +242,15 @@ void hybridMethod() {
 	vector<int> inputIDs;
 	vector< vector<int> > candidateIDs;
 	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
-	set<int>::iterator itt;
-	vector<Vessel*> predictedMBRs;
 	TPRTree* tree = nullptr;
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
-#ifndef SHORT_EXP
 		auto start = high_resolution_clock::now();
-#endif // SHORT_EXP
-
 		if (currentT % I == 0) {
 			inputIDs.empty();
 			inputIDs = PredictUtil::trajectoryFilter(ourVessels, inputEvents[currentT]);
 			tree = new TPRTree();
-
 			for (int j = 0; j < inputIDs.size(); j++) {
 				if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;
@@ -339,32 +259,26 @@ void hybridMethod() {
 			}
 		}
 
-#ifdef SHORT_EXP
-		auto start = high_resolution_clock::now();
-#endif
 		if (currentT % SMALL_I == 0) {
 			for (int j = 0; j < ourVessels.size(); j++) {
 				vector<CEntry> tempCandidates;
 				Vessel* currArea = ourVessels[j];
-				tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r + (SMALL_I * sqrt(pow(currArea->vx, 2) +
-					pow(currArea->vy, 2))), tempCandidates, currentT % I);
-				if (tempCandidates.empty())
-					continue;
-
-				candidateIDs[j].push_back({ tempCandidates[0].m_id });
-				for (int k = 1; k < tempCandidates.size(); k++)
+				tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->queryRad , tempCandidates, currentT % SMALL_I);
+				for (int k = 0; k < tempCandidates.size(); k++) {
 					candidateIDs[j].push_back(tempCandidates[k].m_id);
+#ifdef SHOW_WARN
+					cout << "COLLISION Vessel " << ourVessels[j]->id << " and obj #" << tempCandidates[k].m_id << endl;
+#endif // SHOW_WARN
+				}
 			}
 		}
-
-
-		if (!candidateIDs.empty()) {
+		else {
 			for (int j = 0; j < candidateIDs.size(); j++) {	//FOR VESS
 				for (int k = 0; k < candidateIDs[j].size(); k++) {	//FOR OBJ
 					double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
 #ifdef SHOW_WARN
 					if (dist <= ourVessels[k]->r)
-						cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << 
+						cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" <<
 						inputEvents[currentT][candidateIDs[j][k]]->id << endl;
 #endif // SHOW_WARN
 				}
@@ -378,7 +292,6 @@ void hybridMethod() {
 		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
 		curDuration = 0;
 #endif // SHORT_EXP
-
 #ifndef SHORT_EXP
 		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
 			total += (curDuration / CALCULATE_INTERVAL);
@@ -388,9 +301,9 @@ void hybridMethod() {
 #endif
 		currentT++;
 		updateVesselLoc();
-	}
+		}
 	cout << " Total duration " << total << endl;
-}
+	}
 
 
 void refineAISData()
@@ -481,7 +394,7 @@ void refineAISData()
 	}
 
 	int global_itt = 0;
-	int max_itt = 55;
+	int max_itt = 105;
 	double speedX, speedY;
 	while (true && global_itt < max_itt) {
 		bool hasFinished = true;
@@ -497,8 +410,10 @@ void refineAISData()
 
 int main()
 {
-	//importVesselData();
-	importVesselAIS();
+	Util::interval = I;
+	Util::smInterval = SMALL_I;
+	importVesselData();
+	//importVesselAIS();
 	importGeneratedData();
 	naiveMethod();
 	TPRMethod();
