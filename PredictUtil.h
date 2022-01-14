@@ -1,12 +1,14 @@
 #pragma once
 #include<vector>
+#include<set>
 using namespace std;
 
 class Vessel;
 class Event;
+class TPRTree;
 class PredictUtil
 {
 public:
 	static vector<Vessel*> predictBufferZones(vector<Vessel*>& inputVessel);
-	static vector<int> trajectoryFilter(vector<Vessel*>& inputVessel, vector<Event*>& inputObj);
+	static void trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& indexTree);
 };

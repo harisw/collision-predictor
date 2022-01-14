@@ -559,7 +559,10 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-
+	if (_InsertEntry.isObservable) {
+		m_hasObservableEntry = true;
+		m_ObservableEntriesID.push_back(_InsertEntry.m_id);
+	}
 	return true;
 }
 

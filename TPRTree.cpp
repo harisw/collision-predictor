@@ -147,6 +147,38 @@ void  TPRTree::ClearNodeRecursive(TPRNode* _curNode)
 	return;
 }
 
+void TPRTree::GetOverlappingObject(vector<CEntry*>& outputList, int time)
+{
+
+	if (m_root == NULL)
+		return;
+	GetOverlappingRecursive(m_root, outputList, time);
+
+}
+
+void TPRTree::GetOverlappingRecursive(TPRNode* node, vector<CEntry*>& outputList, int time)
+{
+	if (node->getLevel() == 0) {
+		cout << "Node #" << node->getID() << ",  " << node->getNumEntrys() << " Entries" << endl;
+		CEntry *entries = node->getEntry();
+		if (node->getEntry() != nullptr) {
+			if (!node->m_hasObservableEntry) {
+				cout << "No observable entry" << endl;
+				return;
+			}
+
+			for (int j = 0; j < node->m_ObservableEntriesID.size(); j++)
+				outputList[j] = entries;
+//				cout << " Entry #" << entries[j].m_id << " ( " << entries[j].m_x << ", " << entries[j].m_y << ")" << endl;
+		}
+		return;
+	}
+
+	for (int i = 0; i < node->getNumCntChild(); i++)
+		GetOverlappingRecursive(node->m_childNode[i], outputList, time);
+	return;
+}
+
 bool TPRTree::Clear(void)
 {
 	bool empty = true;

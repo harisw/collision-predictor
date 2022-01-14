@@ -258,12 +258,14 @@ public: // CSKIM
 	int node_visit_count;
 	int founded_obj_count;
 
-
 	double GetVelocity(CEntry _entry)
 	{
 		return sqrt(pow(_entry.getVX(), 2) + pow(_entry.getVY(), 2));
 	}
 
+	//Hari
+	bool m_hasObservableEntry = false;
+	vector<int> m_ObservableEntriesID;
 };
 
 

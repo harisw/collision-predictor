@@ -163,6 +163,8 @@ public: // cskim
 	bool overflowed;
 
 
-
+public: //hari
+	void GetOverlappingObject(vector<CEntry*>& outputList, int time);
+	void GetOverlappingRecursive(TPRNode* _curNode, vector<CEntry*>& outputList, int time);
 
 };

@@ -26,7 +26,7 @@ public:
 	CEntry(void);
 	~CEntry(void);
 
-	CEntry(int _id, unsigned long _time, double _x, double _y, double _z, double _vx, double _vy, double _vz) {
+	CEntry(int _id, unsigned long _time, double _x, double _y, double _z, double _vx, double _vy, double _vz, bool _observable = false) {
 		m_x = _x;
 		m_y = _y;
 		m_z = _z;
@@ -35,8 +35,7 @@ public:
 		m_vz = _vz;
 		m_id = _id;
 		m_time = _time;
-		loc0 = new CPosition(m_x, m_y);
-		currentLoc = loc0;
+		isObservable = _observable;
 	}
 
 	CEntry* getEntry() {
@@ -78,9 +77,7 @@ public:
 	double m_extX, m_extY, m_extZ;
 	double  m_vx, m_vy, m_vz;
 	int m_byEnvironment;
-	CPosition* loc0;
-	CPosition* currentLoc;
-	CPosition* locH;
+	bool isObservable;
 
 public: // for test
 	bool updated = false;

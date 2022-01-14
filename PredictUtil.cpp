@@ -3,6 +3,7 @@
 #include "PredictUtil.h"
 #include "EventPtr.h"
 #include "Util.h"
+#include "TPRTree.h"
 #define PI 3.1416
 
 bool onSegment(Point p, Point q, Point r)
@@ -35,11 +36,15 @@ void cleanVect(vector<Vessel*>& input) {
 	input = res;
 }
 
-vector<int> PredictUtil::trajectoryFilter(vector<Vessel*>& inputVessel, vector<Event*>& inputObj)
+void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& indexTree)
 {
 	vector<Event*> predictedObj;
-	vector<int> candidateID;
+	set<int> candidateID;
 
+	int objOffset = inputObj.size();
+	for (int j = 0; j < inputVessel.size(); j++) {
+		indexTree.Insert(CEntry(objOffset + inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, true));
+	}
 
 	for (int i = 0; i < inputObj.size(); i++) {
 		Event* futureEv = inputObj[i]->predictLoc(Util::interval);
@@ -49,14 +54,12 @@ vector<int> PredictUtil::trajectoryFilter(vector<Vessel*>& inputVessel, vector<E
 		Point b = predictedObj[i]->loc;
 
 		for (int j = 0; j < inputVessel.size(); j++) {
-			
 			double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
 			double stretchedBufferRadius = inputVessel[j]->filterRad;
 			if (dist <= stretchedBufferRadius) {
-				candidateID.push_back(inputObj[i]->id);
+				candidateID.insert(inputObj[i]->id);
 				break;
 			}
 		}
 	}
-	return candidateID;
 }
