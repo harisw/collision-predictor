@@ -159,7 +159,7 @@ void TPRTree::GetOverlappingObject(vector<CEntry*>& outputList, int time)
 void TPRTree::GetOverlappingRecursive(TPRNode* node, vector<CEntry*>& outputList, int time)
 {
 	if (node->getLevel() == 0) {
-		cout << "Node #" << node->getID() << ",  " << node->getNumEntrys() << " Entries" << endl;
+		//cout << "Node #" << node->getID() << ",  " << node->getNumEntrys() << " Entries" << endl;
 		CEntry *entries = node->getEntry();
 		if (node->getEntry() != nullptr) {
 			if (!node->m_hasObservableEntry) {
