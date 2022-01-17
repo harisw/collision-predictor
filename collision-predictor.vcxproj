@@ -152,6 +152,7 @@
     <ClInclude Include="CEntry.h" />
     <ClInclude Include="EventPtr.h" />
     <ClInclude Include="ICMSCalculator.h" />
+    <ClInclude Include="Miniball.hpp" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="PredictUtil.h" />
     <ClInclude Include="TPRNode.h" />

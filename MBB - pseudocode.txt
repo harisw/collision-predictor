@@ -1,0 +1,29 @@
+
+PREDICTION algos
+while(currentT < maxT)
+		if(currentT % I ==0)
+				inputIDs.empty()
+				newTree()
+				filterByTrajectory(inputIDs)
+				newTree->insert(inputIDs)
+				newTree->calcMBB()
+		if(currentT % SM_I == 0)
+				tempCandidates.empty()
+				getOverlappingObjects(tempCandidates, currentT % I)
+
+		naivePredict(tempCandidates)
+
+
+
+CALCMBB()
+for(node in treeNodes)
+	createMBB()
+	for(point in supp_points)
+		getMaxRad()
+
+GETOVERLAPPINGOBJ algos(result, time)
+for(node in treeNodes)
+		
+
+
+

@@ -398,3 +398,5 @@ FodyWeavers.xsd
 *.sln.iml
 datasets/events_*0000.txt
 events_*0000.txt
+datagen and preprocess/*.csv
+datagen and preprocess/*.txt

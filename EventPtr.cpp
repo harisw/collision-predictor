@@ -19,16 +19,17 @@ Event::Event()
 {
 }
 
-Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y)
+Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r)
 {
 	t = _t;
 	id = _id;
 	vx = _vx;
 	vy = _vy;
 	loc = Point(_x, _y);
+	r = _r;
 }
 
 Event* Event::predictLoc(int futureT) {
 	return new Event(t + futureT, id, (loc.x + (futureT * vx)), (loc.y + (futureT * vy)),
-		vx, vy);
+		vx, vy, r);
 }

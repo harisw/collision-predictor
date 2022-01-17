@@ -35,8 +35,9 @@ public:
 	int id;
 	double vx;
 	double vy;
+	double r;
 	Point loc;
 	Event();
-	Event(int _t, int _id, double _vx, double _vy, double _x, double _y);
+	Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r);
 	Event* predictLoc(int futureT);
 };

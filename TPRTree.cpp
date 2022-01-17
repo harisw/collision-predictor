@@ -147,6 +147,10 @@ void  TPRTree::ClearNodeRecursive(TPRNode* _curNode)
 	return;
 }
 
+void TPRTree::SetMBB()
+{
+}
+
 void TPRTree::GetOverlappingObject(vector<CEntry*>& outputList, int time)
 {
 
