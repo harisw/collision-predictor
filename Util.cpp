@@ -1,7 +1,8 @@
 #include "Util.h"
 #include "EventPtr.h"
 #include<cmath>
-
+#include<utility>
+using namespace std;
 int Util::interval;
 int Util::smInterval;
 
@@ -23,12 +24,12 @@ double Util::lineToPointDistance(Point a, Point b, Point c)
 		sqrt((a.y - b.y) * (a.y - b.y) + (a.x - b.x) * (a.x - b.x));
 }
 
-double Util::lineToLineDistance(pair<Point,Point> a, pair<Point,Point> b)
+double Util::lineToLineDistance(Point a1, Point a2, Point b1, Point b2)
 {
 	double result = 99999999;
 	double distA, distB;
-	distA = min(lineToPointDistance(b.first, b.second, a.first), lineToPointDistance(b.first, b.second, a.second));
-	distB = min(lineToPointDistance(a.first, a.second, b.first), lineToPointDistance(a.first, a.second, b.second));
+	distA = min(lineToPointDistance(b1, b2, a1), lineToPointDistance(b1, b2, a2));
+	distB = min(lineToPointDistance(a1, a2, b1), lineToPointDistance(a1, a2, b2));
 
 	return min(distA, distB);
 }

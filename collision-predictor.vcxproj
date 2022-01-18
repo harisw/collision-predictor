@@ -142,7 +142,6 @@
     <ClCompile Include="CEntry.cpp" />
     <ClCompile Include="collision-predictor.cpp" />
     <ClCompile Include="EventPtr.cpp" />
-    <ClCompile Include="FilterTrajectory.cpp" />
     <ClCompile Include="ICMSCalculator.cpp" />
     <ClCompile Include="PredictUtil.cpp" />
     <ClCompile Include="TPRNode.cpp" />
@@ -152,7 +151,6 @@
   <ItemGroup>
     <ClInclude Include="CEntry.h" />
     <ClInclude Include="EventPtr.h" />
-    <ClInclude Include="FilterTrajectory.h" />
     <ClInclude Include="ICMSCalculator.h" />
     <ClInclude Include="Miniball.hpp" />
     <ClInclude Include="Point.h" />

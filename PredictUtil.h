@@ -10,5 +10,5 @@ class PredictUtil
 {
 public:
 	static vector<Vessel*> predictBufferZones(vector<Vessel*>& inputVessel);
-	static void trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& indexTree);
+	static void trajectoryFilter(vector<Event*>& inputObj, TPRTree& indexTree);
 };

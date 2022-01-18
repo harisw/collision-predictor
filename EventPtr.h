@@ -37,7 +37,10 @@ public:
 	double vy;
 	double r;
 	Point loc;
+	Point extLoc;
+	bool filtered = false;
+	bool hasPredicted = false;
 	Event();
 	Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r);
-	Event* predictLoc(int futureT);
+	void predictLoc(int futureT);
 };

@@ -237,7 +237,7 @@ void newHybridMethod() {
 		auto start = high_resolution_clock::now();
 		if (currentT % I == 0) {
 			tree = new TPRTree();
-			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *tree);
+			PredictUtil::trajectoryFilter(inputEvents[currentT], *tree);
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				/*if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;*/
