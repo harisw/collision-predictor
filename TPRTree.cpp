@@ -166,10 +166,6 @@ void TPRTree::GetOverlappingRecursive(TPRNode* node, vector<CEntry*>& outputList
 		//cout << "Node #" << node->getID() << ",  " << node->getNumEntrys() << " Entries" << endl;
 		CEntry *entries = node->getEntry();
 		if (node->getEntry() != nullptr) {
-			if (!node->m_hasObservableEntry) {
-				cout << "No observable entry" << endl;
-				return;
-			}
 
 			for (int j = 0; j < node->m_ObservableEntriesID.size(); j++)
 				outputList[j] = entries;
@@ -237,6 +233,9 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 	if (_curNode->getLevel() == 0)
 	{
 		_curNode->Insert(_input);
+		if (_curNode->m_MaxBufferRadius < _input.m_BufferRadius)		//UPDATE BUFFER RADIUS
+			_curNode->m_MaxBufferRadius = _input.m_BufferRadius;
+
 		_curNode->UpdateMBRbyExt(_insertTime);
 
 		m_ObjectNodePosition[_input.getID()] = _curNode; // cskim
@@ -428,6 +427,7 @@ bool TPRTree::Insert(CEntry _input)
 
 		m_root->writeEntryFile();
 		m_root->freeEntryMemory();
+		m_root->setMaxBufferRadius(_input.m_BufferRadius);
 	}
 	else
 	{

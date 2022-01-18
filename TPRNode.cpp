@@ -64,6 +64,7 @@ TPRNode::TPRNode(double _time, TPRNode** nodes, int _treeID)
 		m_entry = NULL; // disk based
 	}
 
+	m_MaxBufferRadius = -99999999;
 }
 
 TPRNode::TPRNode(TPRNode** nodes) // cskim
@@ -559,10 +560,7 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-	if (_InsertEntry.isObservable) {
-		m_hasObservableEntry = true;
-		m_ObservableEntriesID.push_back(_InsertEntry.m_id);
-	}
+
 	return true;
 }
 
@@ -592,6 +590,11 @@ void TPRNode::UpdateMBRbyEntry(double _time)
 		tempMBR[3] = max(m_entry[i].getY(), tempMBR[3]);
 		//Dr. Jung
 	}
+	//expand MBR by buffer radius
+	tempMBR[0] -= m_MaxBufferRadius;
+	tempMBR[1] -= m_MaxBufferRadius;
+	tempMBR[2] += m_MaxBufferRadius;
+	tempMBR[3] += m_MaxBufferRadius;
 
 	setMBR(tempMBR);
 

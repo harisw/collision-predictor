@@ -12,7 +12,8 @@
 #define UNDERFLOW_RATIO 0.4
 #define PI 3.14159265f
 
-
+//hari
+#define TREE_DIM 2
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -34,9 +35,13 @@
 #include <stdio.h>
 #include <algorithm>
 #include <fstream>
+#include "Miniball.hpp"
 
 using namespace std;
 
+typedef double* const* PointIterator;
+typedef const double* CoordIterator;
+typedef Miniball::Miniball <Miniball::CoordAccessor<PointIterator, CoordIterator> > MB;
 
 struct indexXY { // 엔트리의 변수정보와 index정보를 갖고있음, 정렬 및 split에 활용
 	int id;
@@ -266,6 +271,16 @@ public: // CSKIM
 	//Hari
 	bool m_hasObservableEntry = false;
 	vector<int> m_ObservableEntriesID;
+	double** entryCoords;
+	double m_MaxBufferRadius;
+	void setMaxBufferRadius(double _maxR) {
+		m_MaxBufferRadius = _maxR;
+	}
+	double getBufferRadius(double _maxR) {
+		return m_MaxBufferRadius;
+	}
+protected:
+	double m_MBRPoints[4][TREE_DIM];
 };
 
 

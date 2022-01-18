@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <math.h>
 #include <chrono>
+#include <iterator>
 using namespace std;
 using namespace std::chrono;
 #include "Miniball.hpp"
@@ -241,13 +242,15 @@ void newHybridMethod() {
 				/*if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;*/
 				Event* ev = inputEvents[currentT][*inputItt];
-				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0));
+				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0, ev->r));
 			}
 		}
 
 		if (currentT % SMALL_I == 0) {
-			cout << "TPR Info: " << tree->getLevel() << " Lv; " << tree->getNodeCount() << " Nodes; "
-				<< tree->getLeafCount() << " Leaves" << endl;
+			if(!inputIDs.empty())
+				cout << "TPR Info: " << tree->getLevel() << " Lv; " << tree->getNodeCount() << " Nodes; "
+					<< tree->getLeafCount() << " Leaves" << endl;
+
 			vector<CEntry*> tempCandidates;
 			tempCandidates.insert(tempCandidates.end(), ourVessels.size() + 1, nullptr);
 			tree->GetOverlappingObject(tempCandidates, currentT % SMALL_I);
@@ -303,15 +306,12 @@ void noFilterHybridMethod() {
 			tree = new TPRTree();
 			//PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *tree);
 			int objOffset = inputEvents[currentT].size();
-			for (int j = 0; j < ourVessels.size(); j++)
-				tree->Insert(CEntry(objOffset + ourVessels[j]->id, 0, ourVessels[j]->loc.x, ourVessels[j]->loc.y, 0.0,
-					ourVessels[j]->vx, ourVessels[j]->vy, 0.0, true));
 
 			for(int j=0; j < inputEvents[currentT].size(); j++){
 				/*if (inputIDs[j] >= inputEvents[currentT].size())
 					continue;*/
 				Event* ev = inputEvents[currentT][j];
-				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0));
+				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0, ev->r));
 			}
 		}
 
@@ -351,15 +351,43 @@ int main()
 	//importVesselData();
 	//importVesselAIS();
 	importGeneratedData();
-	naiveMethod();
+	//naiveMethod();
 	//TPRMethod();
-	//newHybridMethod();
+	newHybridMethod();
 	//noFilterHybridMethod();
 	//refineAISData();
-	int d = 2;
-	for (int j = 0; j < 10; j++) {
 
+
+	int n = 10;
+	int d = 2;
+	double** ap = new double*[n];
+//	Point* ap = new Point[n];
+	for (int i = 0; i < n; i++) {
+		double* p = new double[d];
+		p[0] = inputEvents[0][i]->loc.x;
+		p[1] = inputEvents[0][i]->loc.y;
+		ap[i] = p;
 	}
+
+
+	MB mb(d, ap, ap + n);
+
+	// output results
+  // --------------
+  // center
+	std::cout << "Center:\n  ";
+	const double* center = mb.center();
+	for (int i = 0; i < d; ++i, ++center)
+		std::cout << *center << " ";
+	std::cout << std::endl;
+
+	// squared radius
+	std::cout << "Squared radius:\n  ";
+	std::cout << mb.squared_radius() << std::endl;
+
+	// number of support points
+	std::cout << "Number of support points:\n  ";
+	std::cout << mb.nr_support_points() << std::endl;
 }
 
 //

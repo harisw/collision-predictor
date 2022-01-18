@@ -26,4 +26,23 @@ for(node in treeNodes)
 		
 
 
+//current query algo
+RangeQuery(result, targetArea, radius, time)
+if(level > 0)
+	extMBR;
+	for(i to child)
+		extMBR = child[i].getFutureMBR(time)
+		if(extMBR.isInclude(targetArea))
+			child[i].RangeQuery(targetArea)
 
+			nodeVisitcount++
+			foundObjCount++
+
+if(level == 0)
+	for(i to entries)
+		futureXY = entries[i].getFutureXY(time)
+		d = dist(futureXY, targetArea)
+
+		if(d <= radius)
+			foundObjCount++
+			result.push_back(entries[i])

@@ -26,7 +26,7 @@ public:
 	CEntry(void);
 	~CEntry(void);
 
-	CEntry(int _id, unsigned long _time, double _x, double _y, double _z, double _vx, double _vy, double _vz, bool _observable = false) {
+	CEntry(int _id, unsigned long _time, double _x, double _y, double _z, double _vx, double _vy, double _vz, double _radius) {
 		m_x = _x;
 		m_y = _y;
 		m_z = _z;
@@ -35,11 +35,11 @@ public:
 		m_vz = _vz;
 		m_id = _id;
 		m_time = _time;
-		isObservable = _observable;
+		m_BufferRadius = _radius;
 	}
 
 	CEntry* getEntry() {
-		return new CEntry(m_id, m_time, m_x, m_y, m_z, m_vx, m_vy, m_vz);
+		return new CEntry(m_id, m_time, m_x, m_y, m_z, m_vx, m_vy, m_vz, m_BufferRadius);
 	}
 
 	int getID() { return m_id; }
@@ -77,7 +77,7 @@ public:
 	double m_extX, m_extY, m_extZ;
 	double  m_vx, m_vy, m_vz;
 	int m_byEnvironment;
-	bool isObservable;
+	double m_BufferRadius;
 
 public: // for test
 	bool updated = false;
