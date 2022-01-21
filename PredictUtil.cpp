@@ -36,37 +36,62 @@ void cleanVect(vector<Vessel*>& input) {
 	input = res;
 }
 
-void PredictUtil::trajectoryFilter(vector<Event*>& inputObj, TPRTree& indexTree)
+//void PredictUtil::trajectoryFilter(vector<Event*>& inputObj, vector < Vessel*>& inputVessel, TPRTree& indexTree)
+//{
+//	set<int> candidateID;
+//
+//	for (int i = 0; i < inputVessel.size(); i++) {
+//		/*Event* futureEv = inputObj[i]->predictLoc(Util::interval);
+//		predictedObj.push_back(futureEv);*/
+//		
+//		//if (currentEv->filtered)
+//		//	continue;
+//
+//		for(int j=0; j <  inputObj.size(); j++) {
+//			if (inputObj[j]->filtered)
+//				continue;
+//
+//			if (!inputObj[j]->hasPredicted)
+//				inputObj[j]->predictLoc(Util::interval);
+//
+//
+//			double dist = Util::lineToLineDistance(inputVessel[i]->loc, inputVessel[i]->extLoc, inputObj[j]->loc, inputObj[j]->extLoc);
+//			if (dist <=  inputObj[j]->r) ) {
+//				indexTree.Insert(CEntry(currentEv->id, 0.0, currentEv->loc.x, currentEv->loc.y, 0.0,
+//					currentEv->vx, currentEv->vy, 0.0, currentEv->r));
+//
+//				indexTree.Insert(CEntry(inputObj[j]->id, 0.0, inputObj[j]->loc.x, inputObj[j]->loc.y, 0.0,
+//					inputObj[j]->vx, inputObj[j]->vy, 0.0, inputObj[j]->r));
+//
+//				inputObj[i]->filtered = true;
+//				inputObj[j]->filtered = true;
+//				break;
+//			}
+//		}
+//	}
+//}
+
+void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& indexTree, TPRTree& vesselTree, int currTime)
 {
-	//vector<Event*> predictedObj;
+	vector<Event*> predictedObj;
 	set<int> candidateID;
 
+	int objOffset = inputObj.size();
+	for (int j = 0; j < inputVessel.size(); j++)
+		vesselTree.Insert(CEntry(inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, inputVessel[j]->r));
+
 	for (int i = 0; i < inputObj.size(); i++) {
-		/*Event* futureEv = inputObj[i]->predictLoc(Util::interval);
-		predictedObj.push_back(futureEv);*/
-		Event* currentEv = inputObj[i];
-		if (!currentEv->hasPredicted)
-			currentEv->predictLoc(Util::interval);
-		
-		if (currentEv->filtered)
-			continue;
-		for(int j=i+1; j < inputObj.size(); j++) {
-			if (!inputObj[j]->hasPredicted)
-				inputObj[j]->predictLoc(Util::interval);
+		inputObj[i]->predictLoc(Util::interval);
+		//predictedObj.push_back(futureEv);
 
+		Point a = inputObj[i]->loc;
+		Point b = inputObj[i]->extLoc;
 
-			if (inputObj[j]->filtered)
-				continue;
-			double dist = Util::lineToLineDistance(currentEv->loc, currentEv->extLoc, inputObj[j]->loc, inputObj[j]->extLoc);
-			if (dist <= max(currentEv->r, inputObj[j]->r) ) {
-				indexTree.Insert(CEntry(currentEv->id, 0.0, currentEv->loc.x, currentEv->loc.y, 0.0,
-					currentEv->vx, currentEv->vy, 0.0, currentEv->r));
-
-				indexTree.Insert(CEntry(inputObj[j]->id, 0.0, inputObj[j]->loc.x, inputObj[j]->loc.y, 0.0,
-					inputObj[j]->vx, inputObj[j]->vy, 0.0, inputObj[j]->r));
-
-				inputObj[i]->filtered = true;
-				inputObj[j]->filtered = true;
+		for (int j = 0; j < inputVessel.size(); j++) {
+			double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
+			double stretchedBufferRadius = inputVessel[j]->filterRad;
+			if (dist <= stretchedBufferRadius) {
+				candidateID.insert(inputObj[i]->id);
 				break;
 			}
 		}

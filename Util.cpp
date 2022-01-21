@@ -1,8 +1,14 @@
 #include "Util.h"
 #include "EventPtr.h"
+#include <iostream>
 #include<cmath>
 #include<utility>
-using namespace std;
+#include <fstream>
+#include <sstream>
+
+int Util::maxT;
+string Util::vesselFilename;
+string Util::objFilename;
 int Util::interval;
 int Util::smInterval;
 
@@ -32,4 +38,84 @@ double Util::lineToLineDistance(Point a1, Point a2, Point b1, Point b2)
 	distB = min(lineToPointDistance(a1, a2, b1), lineToPointDistance(a1, a2, b2));
 
 	return min(distA, distB);
+}
+
+void Util::importVesselData(vector<Vessel*>& input, int& vesselNum)
+{
+	string filename(vesselFilename);
+	fstream newfile;
+	newfile.open(filename, ios::in); //open a file to perform read operation using file object
+	if (newfile.is_open()) {   //checking whether the file is open
+		string tp;
+		string token, vx, vy, x, y, r;
+		vector< vector<Event*> > collectedEvents = {};
+		collectedEvents.push_back({});
+		while (getline(newfile, tp)) { //read data from file object and put it into string.
+			istringstream tokenizer(tp);
+			getline(tokenizer, token, '|');
+			int obj_id = stoi(token);
+			getline(tokenizer, token, '|');
+			istringstream tokenizer2(token);
+			getline(tokenizer2, x, ','); getline(tokenizer2, y, ',');
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer3(token);
+			getline(tokenizer3, vx, ','); getline(tokenizer3, vy, ',');
+
+			getline(tokenizer, r, '|');
+			Vessel* currentVessel = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
+			input.push_back(currentVessel);
+		}
+		vesselNum = input.size();
+		newfile.close(); //close the file object.
+	}
+	else {
+		cerr << "Error Opening File!!" << endl; return;
+	}
+}
+
+void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
+{
+	string filename(objFilename);
+	fstream newfile;
+	newfile.open(filename, ios::in); //open a file to perform read operation using file object
+	if (newfile.is_open()) {   //checking whether the file is open
+		string tp;
+		int global_itt = 0;
+		int obj_id;
+		int obj_count = 0;
+		double r;
+		string token, vx, vy, x, y;
+		input.push_back({});
+		while (getline(newfile, tp)) { //read data from file object and put it into string.
+			istringstream tokenizer(tp);
+			getline(tokenizer, token, '|'); //READ timestamp
+			if (stoi(token) > global_itt) {
+				if (global_itt >= maxT)
+					break;
+				global_itt++;
+				input.push_back({});
+			}
+
+			getline(tokenizer, token, '|');
+			obj_id = stoi(token);
+			if (obj_id > obj_count) obj_count = obj_id;
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer3(token);
+			getline(tokenizer3, x, ','); getline(tokenizer3, y, ',');
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer2(token);
+			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
+
+			Event* currentEv = new Event(stoi(token), obj_id, stod(vx), stod(vy), stod(x), stod(y));
+			input[global_itt].push_back(currentEv);
+		}
+		objNum = obj_id;
+		newfile.close(); //close the file object.
+	}
+	else {
+		cerr << "Error Opening File!!" << endl; return;
+	}
 }

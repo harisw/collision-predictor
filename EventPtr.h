@@ -24,8 +24,9 @@ public:
 	double r;
 	double filterRad;
 	double queryRad;
+
 	Vessel(int _id, double _x, double _y, double _vx, double _vy, double _r);
-	Vessel* predictLoc(int futureT);
+	void predictLoc(int futureT);
 };
 
 class Event
@@ -41,6 +42,6 @@ public:
 	bool filtered = false;
 	bool hasPredicted = false;
 	Event();
-	Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r);
+	Event(int _t, int _id, double _vx, double _vy, double _x, double _y);
 	void predictLoc(int futureT);
 };

@@ -19,12 +19,11 @@ using namespace std::chrono;
 #include "TPRTree.h"
 #include "PredictUtil.h"
 #include "Util.h"
-//#define VESSEL_FILENAME "vessel_AIS.csv"
-//#define FILENAME "refined_events_AIS.txt"
-#define FILENAME "events_Approach - Bypass102.txt"
-#define MAX_T 50		//GENERATED
-#define I 10
-#define SMALL_I 5
+#define VESSEL_FILENAME "vessel_124.csv"
+#define FILENAME "events_Approach - Bypass250.txt"
+#define MAX_T 200		//GENERATED
+#define I 30
+#define SMALL_I 10
 #define CALCULATE_INTERVAL 5
 #define NAIVE_PRED 0
 #define TPR_PRED 1
@@ -46,9 +45,6 @@ vector< vector<int> > TPRResult;
 vector< vector<int> > hybridResult;
 
 void refineAISData();
-void importVesselData();
-void importVesselAIS();
-void importGeneratedData();
 
 void updateVesselLoc() {
 	for (int j = 0; j < ourVessels.size(); j++) {
@@ -231,18 +227,21 @@ void newHybridMethod() {
 	vector< vector<int> > candidateIDs;
 	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
 	TPRTree* tree = nullptr;
+	TPRTree* vesselTree = nullptr;
+
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
 		auto start = high_resolution_clock::now();
 		if (currentT % I == 0) {
 			tree = new TPRTree();
-			PredictUtil::trajectoryFilter(inputEvents[currentT], *tree);
+			vesselTree = new TPRTree();
+			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *tree, *vesselTree, currentT);
+
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-				/*if (inputIDs[j] >= inputEvents[currentT].size())
-					continue;*/
 				Event* ev = inputEvents[currentT][*inputItt];
-				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0, ev->r));
+				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
+					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
 			}
 		}
 
@@ -252,19 +251,9 @@ void newHybridMethod() {
 					<< tree->getLeafCount() << " Leaves" << endl;
 
 			vector<CEntry*> tempCandidates;
-			tempCandidates.insert(tempCandidates.end(), ourVessels.size() + 1, nullptr);
-			tree->GetOverlappingObject(tempCandidates, currentT % SMALL_I);
+			//tempCandidates.insert(tempCandidates.end(), ourVessels.size() + 1, nullptr);
+			vesselTree->FindOverlapping(tempCandidates, tree, currentT + SMALL_I);
 			
-			for (int j = 0; j < tempCandidates.size(); j++) {
-				int sizeCandidate = sizeof(tempCandidates[j]) / sizeof(tempCandidates[j][0]);
-				if (sizeCandidate == 0)
-					continue;
-				cout << "Vessel : " << j << endl;
-				for (int k = 0; k < sizeCandidate; ++k) {
-					cout << "Obj : " << tempCandidates[j][k].m_id << endl;
-				}
-				cout << endl;
-			}
 		}
 
 		auto stop = high_resolution_clock::now();
@@ -346,48 +335,24 @@ void noFilterHybridMethod() {
 
 int main()
 {
+	Util::objFilename = FILENAME;
+	Util::vesselFilename = VESSEL_FILENAME;
+	Util::maxT = MAX_T;
 	Util::interval = I;
 	Util::smInterval = SMALL_I;
-	//importVesselData();
+	Util::importVesselData(ourVessels, numOfVessel);
+	Util::importObjData(inputEvents, numOfObj);
+
+
+
 	//importVesselAIS();
-	importGeneratedData();
+	//importGeneratedData();
 	//naiveMethod();
 	//TPRMethod();
 	newHybridMethod();
 	//noFilterHybridMethod();
 	//refineAISData();
 
-
-	int n = 10;
-	int d = 2;
-	double** ap = new double*[n];
-//	Point* ap = new Point[n];
-	for (int i = 0; i < n; i++) {
-		double* p = new double[d];
-		p[0] = inputEvents[0][i]->loc.x;
-		p[1] = inputEvents[0][i]->loc.y;
-		ap[i] = p;
-	}
-
-
-	MB mb(d, ap, ap + n);
-
-	// output results
-  // --------------
-  // center
-	std::cout << "Center:\n  ";
-	const double* center = mb.center();
-	for (int i = 0; i < d; ++i, ++center)
-		std::cout << *center << " ";
-	std::cout << std::endl;
-
-	// squared radius
-	std::cout << "Squared radius:\n  ";
-	std::cout << mb.squared_radius() << std::endl;
-
-	// number of support points
-	std::cout << "Number of support points:\n  ";
-	std::cout << mb.nr_support_points() << std::endl;
 }
 
 //
@@ -492,110 +457,4 @@ int main()
 //		global_itt++;
 //	}
 //	outfile.close();
-//}
-//
-//void importVesselData() {
-//	string filename(VESSEL_FILENAME);
-//	fstream newfile;
-//	newfile.open(filename, ios::in); //open a file to perform read operation using file object
-//	if (newfile.is_open()) {   //checking whether the file is open
-//		string tp;
-//		string token, vx, vy, x, y, r;
-//		vector< vector<Event*> > collectedEvents = {};
-//		collectedEvents.push_back({});
-//		while (getline(newfile, tp)) { //read data from file object and put it into string.
-//			istringstream tokenizer(tp);
-//			getline(tokenizer, token, '|');
-//			getline(tokenizer, token, '|');
-//			int obj_id = stoi(token);
-//			getline(tokenizer, x, '|'); getline(tokenizer, y, '|');
-//			getline(tokenizer, vx, '|'); getline(tokenizer, vy, '|');
-//			getline(tokenizer, r, '|');
-//			Vessel* currentVessel = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
-//			ourVessels.push_back(currentVessel);
-//		}
-//		numOfVessel = ourVessels.size();
-//		newfile.close(); //close the file object.
-//	}
-//	else {
-//		cerr << "Error Opening File!!" << endl; return;
-//	}
-//}
-void importGeneratedData() {
-	string filename(FILENAME);
-	fstream newfile;
-	newfile.open(filename, ios::in); //open a file to perform read operation using file object
-	if (newfile.is_open()) {   //checking whether the file is open
-		string tp;
-		int global_itt = 0;
-		int obj_id;
-		int obj_count = 0;
-		double r;
-		string token, vx, vy, x, y;
-		inputEvents.push_back({});
-		while (getline(newfile, tp)) { //read data from file object and put it into string.
-			istringstream tokenizer(tp);
-			getline(tokenizer, token, '|'); //READ timestamp
-			if (stoi(token) > global_itt) {
-				if (global_itt >= MAX_T)
-					break;
-				global_itt++;
-				inputEvents.push_back({});
-			}
-
-			getline(tokenizer, token, '|');
-			obj_id = stoi(token);
-			if (obj_id > obj_count) obj_count = obj_id;
-
-			getline(tokenizer, token, '|');
-			istringstream tokenizer3(token);
-			getline(tokenizer3, x, ','); getline(tokenizer3, y, ',');
-
-			getline(tokenizer, token, '|');
-			istringstream tokenizer2(token);
-			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
-
-			getline(tokenizer, token, '|');
-			r = stod(token);
-
-			Event* currentEv = new Event(stoi(token), obj_id, stod(vx), stod(vy), stod(x), stod(y), r);
-			inputEvents[global_itt].push_back(currentEv);
-		}
-		numOfObj = obj_id;
-		newfile.close(); //close the file object.
-	}
-	else {
-		cerr << "Error Opening File!!" << endl; return;
-	}
-}
-
-//void importVesselAIS() {
-//	string filename(VESSEL_FILENAME);
-//	fstream newfile;
-//	newfile.open(filename, ios::in); //open a file to perform read operation using file object
-//	if (newfile.is_open()) {   //checking whether the file is open
-//		string tp;
-//		string token, vx, vy, x, y, r;
-//		getline(newfile, tp);	//skip header row
-//		while (getline(newfile, tp)) { //read data from file object and put it into string.
-//			istringstream tokenizer(tp);
-//			getline(tokenizer, token, '|');
-//			getline(tokenizer, x, '|'); getline(tokenizer, y, '|');
-//			getline(tokenizer, token, '|');
-//			int obj_id = stoi(token);
-//
-//			getline(tokenizer, token, '|');
-//			istringstream tokenizer2(token);
-//			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
-//
-//			getline(tokenizer, r, '|');
-//			Vessel* currentVessel = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
-//			ourVessels.push_back(currentVessel);
-//		}
-//		numOfVessel = ourVessels.size();
-//		newfile.close(); //close the file object.
-//	}
-//	else {
-//		cerr << "Error Opening File!!" << endl; return;
-//	}
 //}

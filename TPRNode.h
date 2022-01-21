@@ -226,6 +226,8 @@ public: // for KNN
 	void allocEntryMemory();
 	void freeEntryMemory();
 
+	void FindOverlappingRecursive(vector<CEntry*>& result, TPRNode* targetNode, double queryTime);
+
 
 protected:
 
@@ -269,9 +271,7 @@ public: // CSKIM
 	}
 
 	//Hari
-	bool m_hasObservableEntry = false;
-	vector<int> m_ObservableEntriesID;
-	double** entryCoords;
+	bool hasBufferZone = false;
 	double m_MaxBufferRadius;
 	void setMaxBufferRadius(double _maxR) {
 		m_MaxBufferRadius = _maxR;

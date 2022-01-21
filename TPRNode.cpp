@@ -590,11 +590,14 @@ void TPRNode::UpdateMBRbyEntry(double _time)
 		tempMBR[3] = max(m_entry[i].getY(), tempMBR[3]);
 		//Dr. Jung
 	}
-	//expand MBR by buffer radius
-	tempMBR[0] -= m_MaxBufferRadius;
-	tempMBR[1] -= m_MaxBufferRadius;
-	tempMBR[2] += m_MaxBufferRadius;
-	tempMBR[3] += m_MaxBufferRadius;
+
+	if (hasBufferZone) {
+		//expand MBR by buffer radius
+		tempMBR[0] -= m_MaxBufferRadius;
+		tempMBR[1] -= m_MaxBufferRadius;
+		tempMBR[2] += m_MaxBufferRadius;
+		tempMBR[3] += m_MaxBufferRadius;
+	}
 
 	setMBR(tempMBR);
 
@@ -629,7 +632,13 @@ void TPRNode::UpdateMBRbyNode(double _time)
 		tempMBR[3] = max(extMBR[3], tempMBR[3]);
 
 	}
-
+	if (hasBufferZone) {
+		//expand MBR by buffer radius
+		tempMBR[0] -= m_MaxBufferRadius;
+		tempMBR[1] -= m_MaxBufferRadius;
+		tempMBR[2] += m_MaxBufferRadius;
+		tempMBR[3] += m_MaxBufferRadius;
+	}
 	setMBR(tempMBR);
 
 	double tempVBR[6] = { DBL_MAX, DBL_MAX, DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX };
@@ -1056,6 +1065,12 @@ void TPRNode::extfuture_mbr_of_node(double* _extMbr, TPRNode* _node, double _tim
 	_extMbr[1] = _node->m_MBR[1] + _node->m_VBR[1] * diffTime;
 	_extMbr[2] = _node->m_MBR[2] + _node->m_VBR[3] * diffTime;
 	_extMbr[3] = _node->m_MBR[3] + _node->m_VBR[4] * diffTime;
+	if (hasBufferZone) {
+		_extMbr[0] -= m_MaxBufferRadius;
+		_extMbr[0] -= m_MaxBufferRadius;
+		_extMbr[0] += m_MaxBufferRadius;
+		_extMbr[0] += m_MaxBufferRadius;
+	}
 	/*
 	// changed by CSK
 
@@ -1202,4 +1217,31 @@ void TPRNode::freeEntryMemory()
 		free(m_entry);
 	m_entry = NULL;
 
+}
+
+void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, TPRNode* targetNode, double queryTime)
+{
+	if (this == NULL || targetNode == NULL)
+		return;
+
+	//checking from the root
+	double myMBR[4], targetMBR[4];
+	extfuture_mbr_of_node(myMBR, this, queryTime, 0);
+	targetNode->extfuture_mbr_of_node(targetMBR, targetNode, queryTime, 0);
+
+	bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
+	if (isOverlapping) {
+
+		if (m_level == 0) {
+			result.push_back(this->m_entry);
+		}
+		else {
+			for (int j = 0; j < this->getNumCntChild(); j++) {
+				for (int k = 0; k < targetNode->getNumCntChild(); k++) {
+					this->m_childNode[j]->FindOverlappingRecursive(result, targetNode->m_childNode[k], queryTime);
+				}
+			}
+		}
+	}
+	return;
 }

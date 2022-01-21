@@ -147,10 +147,6 @@ void  TPRTree::ClearNodeRecursive(TPRNode* _curNode)
 	return;
 }
 
-void TPRTree::SetMBB()
-{
-}
-
 void TPRTree::GetOverlappingObject(vector<CEntry*>& outputList, int time)
 {
 
@@ -167,8 +163,8 @@ void TPRTree::GetOverlappingRecursive(TPRNode* node, vector<CEntry*>& outputList
 		CEntry *entries = node->getEntry();
 		if (node->getEntry() != nullptr) {
 
-			for (int j = 0; j < node->m_ObservableEntriesID.size(); j++)
-				outputList[j] = entries;
+			//for (int j = 0; j < node->m_ObservableEntriesID.size(); j++)
+			//	outputList[j] = entries;
 //				cout << " Entry #" << entries[j].m_id << " ( " << entries[j].m_x << ", " << entries[j].m_y << ")" << endl;
 		}
 		return;
@@ -233,8 +229,10 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 	if (_curNode->getLevel() == 0)
 	{
 		_curNode->Insert(_input);
-		if (_curNode->m_MaxBufferRadius < _input.m_BufferRadius)		//UPDATE BUFFER RADIUS
-			_curNode->m_MaxBufferRadius = _input.m_BufferRadius;
+		if (hasBufferZone) {
+			if (_curNode->m_MaxBufferRadius < _input.m_BufferRadius)		//UPDATE BUFFER RADIUS
+				_curNode->m_MaxBufferRadius = _input.m_BufferRadius;
+		}
 
 		_curNode->UpdateMBRbyExt(_insertTime);
 
@@ -255,6 +253,8 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 				_curNode->UpdateMBRbyExt(_insertTime);
 
 				TPRNode* tmp = new TPRNode(_insertTime, m_ObjectNodePosition, this->getTreeID());
+				if (hasBufferZone)
+					m_root->hasBufferZone = true;
 				tmp->allocEntryMemory();
 
 				double parentMBR[4] = { _curNode->getMBR()[0], _curNode->getMBR()[1], _curNode->getMBR()[2], _curNode->getMBR()[3] };
@@ -266,6 +266,8 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 				if (_curNode == m_root)
 				{
 					TPRNode* tmpRoot = new TPRNode(_insertTime, m_ObjectNodePosition, this->getTreeID());
+					if (hasBufferZone)
+						m_root->hasBufferZone = true;
 					tmpRoot->setID(m_NodeIDCtrl++);
 
 					tmpRoot->setChildNode(_curNode);
@@ -331,6 +333,8 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 		if (_curNode->getNumCntChild() > NUMNODE)
 		{
 			TPRNode* tmp = new TPRNode(_insertTime, m_ObjectNodePosition, this->getTreeID());
+			if (hasBufferZone)
+				m_root->hasBufferZone = true;
 			double parentMBR[4] = { _curNode->getMBR()[0], _curNode->getMBR()[1], _curNode->getMBR()[2], _curNode->getMBR()[3] };
 			double parentVBR[6] = { _curNode->getVBR()[0], _curNode->getVBR()[1], _curNode->getVBR()[2], _curNode->getVBR()[3], _curNode->getVBR()[4], _curNode->getVBR()[5] };
 
@@ -341,6 +345,8 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 			if (_curNode == m_root)
 			{
 				TPRNode* tmpRoot = new TPRNode(_insertTime, m_ObjectNodePosition, this->getTreeID());
+				if (hasBufferZone)
+					m_root->hasBufferZone = true;
 				tmpRoot->setID(m_NodeIDCtrl++);
 				tmpRoot->setChildNode(_curNode);
 				tmpRoot->setChildNode(tmp);
@@ -417,6 +423,8 @@ bool TPRTree::Insert(CEntry _input)
 	if (m_root == NULL)
 	{
 		m_root = new TPRNode(insertTime, m_ObjectNodePosition, this->getTreeID()); // cskim
+		if (hasBufferZone)
+			m_root->hasBufferZone = true;
 		m_root->allocEntryMemory();
 
 		m_root->Insert(_input);
@@ -427,7 +435,8 @@ bool TPRTree::Insert(CEntry _input)
 
 		m_root->writeEntryFile();
 		m_root->freeEntryMemory();
-		m_root->setMaxBufferRadius(_input.m_BufferRadius);
+		if(hasBufferZone)
+			m_root->setMaxBufferRadius(_input.m_BufferRadius);
 	}
 	else
 	{
@@ -839,4 +848,27 @@ void TPRTree::setTrackInfo(CEntry _input)
 InsertedTrackInfo TPRTree::getTrackInfo(int id)
 {
 	return InsertedTrackList[id];
+}
+
+void TPRTree::FindOverlapping(vector<CEntry*>& result, TPRTree* targetTree, double queryTime)
+{
+	if (m_root == NULL || targetTree->m_root == NULL)
+		return;
+
+	//TPRNode* myNode = m_root;
+	//TPRNode* targetNode = targetTree->m_root;
+	//checking from the root
+	double myMBR[4], targetMBR[4];
+	m_root->extfuture_mbr_of_node(myMBR, m_root, queryTime, 0);
+	targetTree->m_root->extfuture_mbr_of_node(targetMBR, targetTree->m_root, queryTime, 0);
+
+	bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
+	if (isOverlapping) {
+		for (int j = 0; j < m_root->getNumCntChild(); j++) {
+			for (int k = 0; k < targetTree->m_root->getNumCntChild(); k++) {
+				m_root->m_childNode[j]->FindOverlappingRecursive(result, targetTree->m_root->m_childNode[k], queryTime);
+			}
+		}
+	}
+	return;
 }

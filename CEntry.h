@@ -26,7 +26,7 @@ public:
 	CEntry(void);
 	~CEntry(void);
 
-	CEntry(int _id, unsigned long _time, double _x, double _y, double _z, double _vx, double _vy, double _vz, double _radius) {
+	CEntry(int _id, unsigned long _time, double _x, double _y, double _z, double _vx, double _vy, double _vz, double _radius = 0) {
 		m_x = _x;
 		m_y = _y;
 		m_z = _z;
