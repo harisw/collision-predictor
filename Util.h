@@ -19,6 +19,8 @@ public:
 	static double lineToLineDistance(Point a1, Point a2, Point b1, Point b2);
 	static void importVesselData(vector<Vessel*>& input, int& vesselNum);
 	static void importObjData(vector<vector<Event*>>& input, int& objNum);
+	static void exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >& TPRResult,
+		vector<vector<int> >& hybridResult);
 	//static double lineToLineDistance(pair<Point, Point> a, pair<Point, Point> b);
 	//static void refineAISData();
 };

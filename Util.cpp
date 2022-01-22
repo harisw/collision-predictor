@@ -119,3 +119,56 @@ void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
 		cerr << "Error Opening File!!" << endl; return;
 	}
 }
+
+void Util::exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >& TPRResult, vector<vector<int> >& hybridResult)
+{
+	string filename = "naive_result.csv";
+	if (!naiveResult.empty()) {
+		ofstream outfile;
+		outfile.open(filename, ofstream::trunc); // opens the file
+		if (!outfile) { // file couldn't be opened
+			cerr << "Error: file could not be opened" << endl;
+			exit(1);
+		}
+		outfile << "t" << "|" << "obj_id" << endl;
+		for (int j = 0; j < naiveResult.size(); j++) {
+			for (int k = 0; k < naiveResult[j].size(); k++) {
+				outfile << j << "|" << naiveResult[j][k] << endl;
+			}
+		}
+		outfile.close();
+	}
+	if (!TPRResult.empty()) {
+		filename = "TPR_result.csv";
+		ofstream outfile;
+		outfile.open(filename, ofstream::trunc); // opens the file
+		if (!outfile) { // file couldn't be opened
+			cerr << "Error: file could not be opened" << endl;
+			exit(1);
+		}
+		outfile << "t" << "|" << "obj_id" << endl;
+		for (int j = 0; j < TPRResult.size(); j++) {
+			for (int k = 0; k < TPRResult[j].size(); k++) {
+				outfile << j << "|" << TPRResult[j][k] << endl;
+			}
+		}
+		outfile.close();
+	}
+	if (!hybridResult.empty()) {
+		ofstream outfile;
+		filename = "hybrid_result.csv";
+		outfile.open(filename, ofstream::trunc); // opens the file
+		if (!outfile) { // file couldn't be opened
+			cerr << "Error: file could not be opened" << endl;
+			exit(1);
+		}
+		outfile << "t" << "|" << "obj_id" << endl;
+		for (int j = 0; j < hybridResult.size(); j++) {
+			for (int k = 0; k < hybridResult[j].size(); k++) {
+				outfile << j << "|" << hybridResult[j][k] << endl;
+			}
+		}
+		outfile.close();
+	}
+	return;
+}

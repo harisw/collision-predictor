@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 #1 option
 	use currRectMBR
 	findMinMaxPoint
@@ -25,3 +33,17 @@
 		check collision of MBR's entry pairwise
 	#2 option
 		check collision of MBR's all entries
+
+
+
+
+vector<TPRNode*> overlappingNodes
+for(node to childNodes)
+	for(node2 to childNodes)
+		if(node->intersect(node2))
+			overlappingNodes.push_back()
+
+
+
+
+

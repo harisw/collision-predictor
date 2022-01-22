@@ -19,11 +19,11 @@ using namespace std::chrono;
 #include "TPRTree.h"
 #include "PredictUtil.h"
 #include "Util.h"
-#define VESSEL_FILENAME "vessel_124.csv"
-#define FILENAME "events_Approach - Bypass250.txt"
-#define MAX_T 200		//GENERATED
-#define I 30
-#define SMALL_I 10
+#define VESSEL_FILENAME "vessel_499.csv"
+#define FILENAME "events_Approach - Bypass1000.txt"
+#define MAX_T 100		//GENERATED
+#define I 10
+#define SMALL_I 5
 #define CALCULATE_INTERVAL 5
 #define NAIVE_PRED 0
 #define TPR_PRED 1
@@ -33,7 +33,7 @@ using namespace std::chrono;
 //#define I 15
 //#define SMALL_I 5
 //#define CALCULATE_INTERVAL 6
-//#define SHOW_WARN 1
+#define SHOW_WARN 1
 //#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
 vector<Vessel*> ourVessels;
@@ -93,59 +93,66 @@ void naiveMethod() {
 	}
 	cout << " Total duration " << total << endl;
 }
-//void TPRMethod() {
-//	cout << endl << "TPR Only" << endl;
-//	int currentT = 0;
-//	int maxT = MAX_T;
-//	vector<int> inputIDs;
-//	TPRTree* tree = nullptr;
-//	unsigned long curDuration = 0;
-//	unsigned long total = 0;
-//	while (currentT < maxT) {
-//		auto start = high_resolution_clock::now();
-//		if (currentT % I == 0) {
-//			inputIDs.empty();
-//			inputIDs = PredictUtil::trajectoryFilter(ourVessels, inputEvents[currentT]);
-//			tree = new TPRTree();
-//			for (int j = 0; j < inputIDs.size(); j++) {
-//				if (inputIDs[j] >= inputEvents[currentT].size())
-//					continue;
-//				Event* ev = inputEvents[currentT][inputIDs[j]];
-//				tree->Insert(CEntry(ev->id, currentT, ev->loc.x, ev->loc.y, 0.0, ev->vx, ev->vy, 0.0));
-//			}
-//		}
-//
-//		for (int j = 0; j < ourVessels.size(); j++) {
-//			vector<CEntry> tempCandidates;
-//			Vessel* currArea = ourVessels[j];
-//			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % I);
-//			for (int k = 0; k < tempCandidates.size(); k++) {
-//#ifdef SHOW_WARN
-//				cout << "COLLISION Vessel " << currArea->id << " and obj #" << tempCandidates[k].m_id << endl;
-//#endif // SHOW_WARN
-//			}
-//		}
-//
-//		auto stop = high_resolution_clock::now();
-//		auto duration = duration_cast<microseconds>(stop - start);
-//		curDuration += duration.count();
-//#ifdef SHORT_EXP
-//		total += curDuration;
-//		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
-//		curDuration = 0;
-//#endif // SHORT_EXP
-//#ifndef SHORT_EXP
-//		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
-//			total += (curDuration / CALCULATE_INTERVAL);
-//			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
-//			curDuration = 0;
-//		}
-//#endif
-//		currentT++;
-//		updateVesselLoc();
-//	}
-//	cout << " Total duration " << total << endl;
-//}
+void TPRMethod() {
+	cout << endl << "TPR Only" << endl;
+	int currentT = 0;
+	int maxT = MAX_T;
+	set<int> inputIDs;
+	set<int>::iterator inputItt;
+
+	vector< vector<int> > candidateIDs;
+	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
+	TPRTree* tree = nullptr;
+	TPRTree* vesselTree = nullptr;
+
+	unsigned long curDuration = 0;
+	unsigned long total = 0;
+	while (currentT < maxT) {
+		auto start = high_resolution_clock::now();
+		if (currentT % I == 0) {
+			tree = new TPRTree();
+			vesselTree = new TPRTree();
+
+			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *tree, *vesselTree, currentT);
+
+			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
+				Event* ev = inputEvents[currentT][*inputItt];
+				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
+					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
+			}
+		}
+
+		for (int j = 0; j < ourVessels.size(); j++) {
+			vector<CEntry> tempCandidates;
+			Vessel* currArea = ourVessels[j];
+			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % I);
+			for (int k = 0; k < tempCandidates.size(); k++) {
+#ifdef SHOW_WARN
+				TPRResult[currentT].push_back(inputEvents[currentT][j]->id);
+#endif // SHOW_WARN
+			}
+		}
+
+		auto stop = high_resolution_clock::now();
+		auto duration = duration_cast<microseconds>(stop - start);
+		curDuration += duration.count();
+#ifdef SHORT_EXP
+		total += curDuration;
+		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
+		curDuration = 0;
+#endif // SHORT_EXP
+#ifndef SHORT_EXP
+		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
+			total += (curDuration / CALCULATE_INTERVAL);
+			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
+			curDuration = 0;
+		}
+#endif
+		currentT++;
+		updateVesselLoc();
+	}
+	cout << " Total duration " << total << endl;
+}
 
 //void hybridMethod() {
 //	cout << endl << "Hybrid" << endl;
@@ -347,12 +354,12 @@ int main()
 
 	//importVesselAIS();
 	//importGeneratedData();
-	//naiveMethod();
-	//TPRMethod();
-	newHybridMethod();
+	naiveMethod();
+	TPRMethod();
+	//newHybridMethod();
 	//noFilterHybridMethod();
 	//refineAISData();
-
+	Util::exportResult(naiveResult, TPRResult, hybridResult);
 }
 
 //
