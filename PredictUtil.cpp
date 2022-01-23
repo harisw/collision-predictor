@@ -91,7 +91,7 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVes
 			double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
 			double stretchedBufferRadius = inputVessel[j]->filterRad;
 			if (dist <= stretchedBufferRadius) {
-				candidateID.insert(inputObj[i]->id);
+				inputIDs.insert(inputObj[i]->id);
 				break;
 			}
 		}

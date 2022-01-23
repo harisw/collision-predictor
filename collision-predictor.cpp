@@ -22,8 +22,8 @@ using namespace std::chrono;
 #define VESSEL_FILENAME "vessel_499.csv"
 #define FILENAME "events_Approach - Bypass1000.txt"
 #define MAX_T 100		//GENERATED
-#define I 10
-#define SMALL_I 5
+#define I 9
+#define SMALL_I 3
 #define CALCULATE_INTERVAL 5
 #define NAIVE_PRED 0
 #define TPR_PRED 1
@@ -108,6 +108,7 @@ void TPRMethod() {
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
+		TPRResult.push_back({});
 		auto start = high_resolution_clock::now();
 		if (currentT % I == 0) {
 			tree = new TPRTree();
@@ -253,11 +254,12 @@ void newHybridMethod() {
 		}
 
 		if (currentT % SMALL_I == 0) {
-			if(!inputIDs.empty())
+			/*if(!inputIDs.empty())
 				cout << "TPR Info: " << tree->getLevel() << " Lv; " << tree->getNodeCount() << " Nodes; "
-					<< tree->getLeafCount() << " Leaves" << endl;
+					<< tree->getLeafCount() << " Leaves" << endl;*/
 
 			vector<CEntry*> tempCandidates;
+
 			//tempCandidates.insert(tempCandidates.end(), ourVessels.size() + 1, nullptr);
 			vesselTree->FindOverlapping(tempCandidates, tree, currentT + SMALL_I);
 			
@@ -355,8 +357,8 @@ int main()
 	//importVesselAIS();
 	//importGeneratedData();
 	naiveMethod();
-	TPRMethod();
-	//newHybridMethod();
+	//TPRMethod();
+	newHybridMethod();
 	//noFilterHybridMethod();
 	//refineAISData();
 	Util::exportResult(naiveResult, TPRResult, hybridResult);
