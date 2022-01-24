@@ -40,7 +40,7 @@ double Util::lineToLineDistance(Point a1, Point a2, Point b1, Point b2)
 	return min(distA, distB);
 }
 
-void Util::importVesselData(vector<Vessel*>& input, int& vesselNum)
+void Util::importVesselData(vector<Vessel*>& input, vector<Vessel*>& buInput, int& vesselNum)
 {
 	string filename(vesselFilename);
 	fstream newfile;
@@ -64,7 +64,9 @@ void Util::importVesselData(vector<Vessel*>& input, int& vesselNum)
 
 			getline(tokenizer, r, '|');
 			Vessel* currentVessel = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
+			Vessel* ves2 = new Vessel(obj_id, stod(x), stod(y), stod(vx), stod(vy), stod(r));
 			input.push_back(currentVessel);
+			buInput.push_back(ves2);
 		}
 		vesselNum = input.size();
 		newfile.close(); //close the file object.
@@ -109,7 +111,7 @@ void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
 			istringstream tokenizer2(token);
 			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
 
-			Event* currentEv = new Event(stoi(token), obj_id, stod(vx), stod(vy), stod(x), stod(y));
+			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y));
 			input[global_itt].push_back(currentEv);
 		}
 		objNum = obj_id;

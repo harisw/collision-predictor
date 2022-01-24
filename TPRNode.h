@@ -226,7 +226,7 @@ public: // for KNN
 	void allocEntryMemory();
 	void freeEntryMemory();
 
-	void FindOverlappingRecursive(vector<CEntry*>& result, TPRNode* targetNode, double queryTime);
+	void FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime);
 
 
 protected:

@@ -76,6 +76,7 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVes
 	vector<Event*> predictedObj;
 	set<int> candidateID;
 
+
 	int objOffset = inputObj.size();
 	for (int j = 0; j < inputVessel.size(); j++)
 		vesselTree.Insert(CEntry(inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, inputVessel[j]->r));

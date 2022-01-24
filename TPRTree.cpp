@@ -850,7 +850,7 @@ InsertedTrackInfo TPRTree::getTrackInfo(int id)
 	return InsertedTrackList[id];
 }
 
-void TPRTree::FindOverlapping(vector<CEntry*>& result, TPRTree* targetTree, double queryTime)
+void TPRTree::FindOverlapping(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRTree* targetTree, double queryTime)
 {
 	if (m_root == NULL || targetTree->m_root == NULL)
 		return;
@@ -866,7 +866,7 @@ void TPRTree::FindOverlapping(vector<CEntry*>& result, TPRTree* targetTree, doub
 	if (isOverlapping) {
 		for (int j = 0; j < m_root->getNumCntChild(); j++) {
 			for (int k = 0; k < targetTree->m_root->getNumCntChild(); k++) {
-				m_root->m_childNode[j]->FindOverlappingRecursive(result, targetTree->m_root->m_childNode[k], queryTime);
+				m_root->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, targetTree->m_root->m_childNode[k], queryTime);
 			}
 		}
 	}

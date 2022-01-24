@@ -17,7 +17,8 @@ public:
 	static double distance(Point p, Point q);
 	static double lineToPointDistance(Point a, Point b, Point circle);
 	static double lineToLineDistance(Point a1, Point a2, Point b1, Point b2);
-	static void importVesselData(vector<Vessel*>& input, int& vesselNum);
+	static void importVesselData(vector<Vessel*>& input, vector<Vessel*>& input2, 
+		int& vesselNum);
 	static void importObjData(vector<vector<Event*>>& input, int& objNum);
 	static void exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >& TPRResult,
 		vector<vector<int> >& hybridResult);
