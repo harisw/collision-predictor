@@ -20,8 +20,8 @@ public:
 	static void importVesselData(vector<Vessel*>& input, vector<Vessel*>& input2, 
 		int& vesselNum);
 	static void importObjData(vector<vector<Event*>>& input, int& objNum);
-	static void exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >& TPRResult,
-		vector<vector<int> >& hybridResult);
+	static void exportResult(vector< vector<pair<int,int> > >& naiveResult, vector<vector<pair<int, int> > >& TPRResult,
+		vector<vector<pair<int, int> > >& hybridResult);
 	//static double lineToLineDistance(pair<Point, Point> a, pair<Point, Point> b);
 	//static void refineAISData();
 };

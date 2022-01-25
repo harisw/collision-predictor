@@ -1219,6 +1219,19 @@ void TPRNode::freeEntryMemory()
 
 }
 
+void TPRNode::RetrieveEntryRecursive(vector<CEntry*>& result)
+{
+	if (m_level == 0) {
+		if (!result.empty() && m_entry[0].m_id == result[0]->m_id)
+			return;
+		for (int j = 0; j < m_NumCntEntries; j++)
+			result.push_back(&m_entry[j]);
+	}
+	else {
+		for (int j = 0; j < m_NumCntChild; j++)
+			m_childNode[j]->RetrieveEntryRecursive(result);
+	}
+}
 void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime)
 {
 	if (this == NULL || targetNode == NULL)
@@ -1232,17 +1245,19 @@ void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>&
 	bool isOverlapping = !(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3]);
 	//bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
 	if (isOverlapping) {
-		if (m_level == 0) {
-			result.push_back(targetNode->m_entry);
-			vesselResult.push_back(this->m_entry);
-		}
-		else {
-			for (int j = 0; j < this->getNumCntChild(); j++) {
-				for (int k = 0; k < targetNode->getNumCntChild(); k++) {
-					this->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, targetNode->m_childNode[k], queryTime);
-				} 
-			}
-		}
+		result.push_back(targetNode->m_entry);
+		RetrieveEntryRecursive(vesselResult);;
+		//if (m_level == 0) {
+		//	result.push_back(targetNode->m_entry);
+		//	vesselResult.push_back(this->m_entry);
+		//}
+		//else {
+		//	for (int j = 0; j < this->getNumCntChild(); j++) {
+		//		for (int k = 0; k < targetNode->getNumCntChild(); k++) {
+		//			this->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, targetNode->m_childNode[k], queryTime);
+		//		} 
+		//	}
+		//}
 	}
 	return;
 }

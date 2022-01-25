@@ -226,8 +226,6 @@ public: // for KNN
 	void allocEntryMemory();
 	void freeEntryMemory();
 
-	void FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime);
-
 
 protected:
 
@@ -279,6 +277,8 @@ public: // CSKIM
 	double getBufferRadius(double _maxR) {
 		return m_MaxBufferRadius;
 	}
+	void FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime);
+	void RetrieveEntryRecursive(vector<CEntry*>& result);
 protected:
 	double m_MBRPoints[4][TREE_DIM];
 };

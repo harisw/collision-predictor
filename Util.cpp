@@ -5,6 +5,7 @@
 #include<utility>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 int Util::maxT;
 string Util::vesselFilename;
@@ -122,7 +123,8 @@ void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
 	}
 }
 
-void Util::exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >& TPRResult, vector<vector<int> >& hybridResult)
+void Util::exportResult(vector< vector<pair<int, int> > >& naiveResult, vector<vector<pair<int, int> > >& TPRResult,
+	vector<vector<pair<int, int> > >& hybridResult)
 {
 	string filename = "naive_result.csv";
 	if (!naiveResult.empty()) {
@@ -135,7 +137,7 @@ void Util::exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >
 		outfile << "t" << "|" << "obj_id" << endl;
 		for (int j = 0; j < naiveResult.size(); j++) {
 			for (int k = 0; k < naiveResult[j].size(); k++) {
-				outfile << j << "|" << naiveResult[j][k] << endl;
+				outfile << j << "|" << naiveResult[j][k].first << " with " << naiveResult[j][k].second << endl;
 			}
 		}
 		outfile.close();
@@ -151,7 +153,7 @@ void Util::exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >
 		outfile << "t" << "|" << "obj_id" << endl;
 		for (int j = 0; j < TPRResult.size(); j++) {
 			for (int k = 0; k < TPRResult[j].size(); k++) {
-				outfile << j << "|" << TPRResult[j][k] << endl;
+				outfile << j << "|" << TPRResult[j][k].first << " with " << TPRResult[j][k].second << endl;
 			}
 		}
 		outfile.close();
@@ -167,7 +169,7 @@ void Util::exportResult(vector< vector<int> >& naiveResult, vector<vector<int> >
 		outfile << "t" << "|" << "obj_id" << endl;
 		for (int j = 0; j < hybridResult.size(); j++) {
 			for (int k = 0; k < hybridResult[j].size(); k++) {
-				outfile << j << "|" << hybridResult[j][k] << endl;
+				outfile << j << "|" << hybridResult[j][k].first << " with " << hybridResult[j][k].second << endl;
 			}
 		}
 		outfile.close();
