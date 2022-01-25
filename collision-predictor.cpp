@@ -71,8 +71,6 @@ void naiveMethod() {
 
 #ifdef SHOW_WARN
 				if (dist <= ourVessels[k]->r) {
-					if (currentT == 80)
-						cout << "MAM" << endl;
 					naiveResult[currentT].push_back(inputEvents[currentT][j]->id);
 				}
 #endif // SHOW_WARN
@@ -123,7 +121,7 @@ void TPRMethod() {
 			tree = new TPRTree();
 			vesselTree = new TPRTree();
 
-			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *tree, *vesselTree, currentT);
+			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *vesselTree, currentT);
 
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
@@ -259,7 +257,7 @@ void newHybridMethod() {
 		if (currentT % I == 0) {
 			tree = new TPRTree();
 			vesselTree = new TPRTree();
-			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *tree, *vesselTree, currentT);
+			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *vesselTree, currentT);
 
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
@@ -274,63 +272,30 @@ void newHybridMethod() {
 		//	InsertedTrackInfo tmp = tree->getTrackInfo(389);
 		//	cout << "389 at 59 on " << tmp.x << ", " << tmp.y << endl;
 		//}
-		//if (currentT == 75) {
-		//	InsertedTrackInfo tmp = tree->getTrackInfo(234);
-		//	cout << "234 at 75 on " << tmp.x << ", " << tmp.y << endl;
-		//}
-		//if (currentT == 80) {
-		//	InsertedTrackInfo tmp = tree->getTrackInfo(471);
-		//	cout << "471 at 80 on " << tmp.x << ", " << tmp.y << endl;
-		//}
 
-		//if(!inputIDs.empty())
-		//	cout << "TPR Entry: " << tree->getObjectCount() << endl;
-
-//		if (currentT == 75) {
-//			for (int j = 0; j < ourVessels.size(); j++) {
-//				vector<CEntry> tempCandidates;
-//				Vessel* currArea = ourVessels[j];
-//				tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r * 2, tempCandidates, currentT % I);
-//				for (int k = 0; k < tempCandidates.size(); k++) {
+//		for (int j = 0; j < ourVessels.size(); j++) {
+//			vector<CEntry> tempCandidates;
+//			Vessel* currArea = ourVessels[j];
+//			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT%I);
+//			for (int k = 0; k < tempCandidates.size(); k++) {
 //#ifdef SHOW_WARN
-//					hybridResult[currentT].push_back(inputEvents[currentT][j]->id);
+//				hybridResult[currentT].push_back(tempCandidates[k].m_id);
 //#endif // SHOW_WARN
-//				}
 //			}
 //		}
-		for (int j = 0; j < ourVessels.size(); j++) {
-			vector<CEntry> tempCandidates;
-			Vessel* currArea = ourVessels[j];
-			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT%I);
-			for (int k = 0; k < tempCandidates.size(); k++) {
-#ifdef SHOW_WARN
-				hybridResult[currentT].push_back(tempCandidates[k].m_id);
-#endif // SHOW_WARN
-			}
+
+		if (currentT % SMALL_I == 0) {
+				cout << "TPR Entry: " << tree->getObjectCount() << " Lv; " << tree->getNodeCount() << " Nodes; "
+					<< tree->getLeafCount() << " Leaves" << endl;
+
+			tempCandidates.empty();
+			overlappingVessel.empty();
+			//tempCandidates.insert(tempCandidates.end(), ourVessels.size() + 1, nullptr);
+			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, currentT + I);
+			if (!tempCandidates.empty())
+				cout << "Overlapping Entry: " << tempCandidates.size() << " obj" << endl;
 		}
 
-//		for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-//			for (int k = 0; k < ourVessels.size(); k++) {
-//				double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][*inputItt]->loc);
-//#ifdef SHOW_WARN
-//				if (dist <= ourVessels[k]->r)
-//					hybridResult[currentT].push_back(inputEvents[currentT][*inputItt]->id);
-//				//cout << "COLLISION Vessel " << ourVessels[k]->id << " and obj #" << inputEvents[currentT][j]->id << endl;
-//#endif // SHOW_WARN
-//			}
-//		}
-//		if (currentT % SMALL_I == 0) {
-//				cout << "TPR Entry: " << tree->getObjectCount() << " Lv; " << tree->getNodeCount() << " Nodes; "
-//					<< tree->getLeafCount() << " Leaves" << endl;
-//
-//			tempCandidates.empty();
-//			overlappingVessel.empty();
-//			//tempCandidates.insert(tempCandidates.end(), ourVessels.size() + 1, nullptr);
-//			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, currentT + SMALL_I);
-//			if (!tempCandidates.empty())
-//				cout << "Overlapping Entry: " << tempCandidates.size() << " obj" << endl;
-//		}
-//
 //		for (int j = 0; j < overlappingVessel.size(); j++) {	//FOR VESS
 //			CEntry* currVessel = overlappingVessel[j];
 //			for (int k = 0; k < tempCandidates.size(); k++) {	//FOR OBJ

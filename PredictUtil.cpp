@@ -71,11 +71,9 @@ void cleanVect(vector<Vessel*>& input) {
 //	}
 //}
 
-void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& indexTree, TPRTree& vesselTree, int currTime)
+void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& vesselTree, int currTime)
 {
 	vector<Event*> predictedObj;
-	set<int> candidateID;
-
 
 	int objOffset = inputObj.size();
 	for (int j = 0; j < inputVessel.size(); j++)
