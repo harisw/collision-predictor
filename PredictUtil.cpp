@@ -74,10 +74,8 @@ void cleanVect(vector<Vessel*>& input) {
 void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, TPRTree& vesselTree, int currTime)
 {
 	vector<Event*> predictedObj;
-
-	int objOffset = inputObj.size();
-	for (int j = 0; j < inputVessel.size(); j++)
-		vesselTree.Insert(CEntry(inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, inputVessel[j]->r));
+	vector<bool> vesselCandidates;
+	vesselCandidates.insert(vesselCandidates.end(), inputVessel.size(), false);
 
 	for (int i = 0; i < inputObj.size(); i++) {
 		inputObj[i]->predictLoc(Util::interval);
@@ -89,10 +87,18 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVes
 		for (int j = 0; j < inputVessel.size(); j++) {
 			double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
 			double stretchedBufferRadius = inputVessel[j]->filterRad;
+			if (currTime == 50 && i == 314 && j == 24)
+				cout << "MAMAM" << endl;
 			if (dist <= stretchedBufferRadius) {
 				inputIDs.insert(inputObj[i]->id);
+				vesselCandidates[j] = true;
 				break;
 			}
 		}
+	}
+
+	for (int j = 0; j < vesselCandidates.size(); j++) {
+		if(vesselCandidates[j])
+			vesselTree.Insert(CEntry(inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, inputVessel[j]->r));
 	}
 }

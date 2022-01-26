@@ -147,6 +147,35 @@ void  TPRTree::ClearNodeRecursive(TPRNode* _curNode)
 	return;
 }
 
+void TPRTree::PrintAllEntry()
+{
+	bool vesselFlag[1000];
+	fill_n(vesselFlag, 1000, false);
+	int count = 0;
+	PrintAllEntryRecursive(m_root, vesselFlag, count);
+	cout << "TOTAL entry : " << count << endl;
+}
+
+void TPRTree::PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int &count)
+{
+	if (node->getLevel() == 0) {
+		cout << "Leaf Node #" << node->m_ID << ": ";
+		for (int j = 0; j < node->getNumEntrys(); j++) {
+			int ent_id = node->getEntry()[j].m_id;
+			if (vesselFlag[ent_id])
+				cout << "DUPLICATE " << ent_id << "!! ";
+			else
+				vesselFlag[ent_id] = true;
+			cout << "Entry " << ent_id << endl;
+			count++;
+		}
+	}
+	else {
+		for (int j = 0; j < node->getNumCntChild(); j++)
+			PrintAllEntryRecursive(node->m_childNode[j], vesselFlag, count);
+	}
+}
+
 void TPRTree::GetOverlappingObject(vector<CEntry*>& outputList, int time)
 {
 

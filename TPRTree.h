@@ -163,6 +163,8 @@ public: // cskim
 	bool overflowed;
 
 public: //hari
+	void PrintAllEntry();
+	void PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int& count);
 	void GetOverlappingObject(vector<CEntry*>& outputList, int time);
 	void GetOverlappingRecursive(TPRNode* _curNode, vector<CEntry*>& outputList, int time);
 	void FindOverlapping(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRTree* targetTree, double queryTime);

@@ -1245,7 +1245,8 @@ void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>&
 	bool isOverlapping = !(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3]);
 	//bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
 	if (isOverlapping) {
-		result.push_back(targetNode->m_entry);
+		targetNode->RetrieveEntryRecursive(result);
+		//result.push_back(targetNode->m_entry);
 		RetrieveEntryRecursive(vesselResult);;
 		//if (m_level == 0) {
 		//	result.push_back(targetNode->m_entry);
