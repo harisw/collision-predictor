@@ -22,7 +22,7 @@ using namespace std::chrono;
 #define VESSEL_FILENAME "vessel_499.csv"
 #define FILENAME "events_Approach - Bypass1000.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 100		//GENERATED
+#define MAX_T 10		//GENERATED
 #define I 10
 #define SMALL_I 5
 #define CALCULATE_INTERVAL 5
@@ -240,12 +240,16 @@ void newHybridMethod() {
 		for (int j = 0; j < overlappingVessel.size(); j++) {	//FOR VESS
 			CEntry* currVessel = overlappingVessel[j];
 
+			/*if (overlappingVessel[j]->m_id == 371)
+				cout << currentT << " Time    MAMAM371" << endl;*/
 			for (int k = 0; k < tempCandidates.size(); k++) {	//FOR OBJ
 				double dist = Util::distance(ourVessels[currVessel->m_id]->loc, inputEvents[currentT][tempCandidates[k]->m_id]->loc);
 				//double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
+
 #ifdef SHOW_WARN
 				if (dist <= currVessel->m_BufferRadius)
 					hybridResult[currentT].push_back(make_pair(overlappingVessel[j]->m_id, tempCandidates[k]->m_id));
+
 #endif // SHOW_WARN
 			}
 		}

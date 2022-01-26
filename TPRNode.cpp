@@ -1224,8 +1224,12 @@ void TPRNode::RetrieveEntryRecursive(vector<CEntry*>& result)
 	if (m_level == 0) {
 		if (!result.empty() && m_entry[0].m_id == result[0]->m_id)
 			return;
-		for (int j = 0; j < m_NumCntEntries; j++)
+		for (int j = 0; j < m_NumCntEntries; j++) {
+			if (m_entry[j].m_id == 371)
+				cout << "nodeID " << m_ID << " size : " << m_NumCntEntries << " HAHAHAH" << endl;
 			result.push_back(&m_entry[j]);
+		}
+		return;
 	}
 	else {
 		for (int j = 0; j < m_NumCntChild; j++)
@@ -1247,7 +1251,7 @@ void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>&
 	if (isOverlapping) {
 		targetNode->RetrieveEntryRecursive(result);
 		//result.push_back(targetNode->m_entry);
-		RetrieveEntryRecursive(vesselResult);;
+		this->RetrieveEntryRecursive(vesselResult);
 		//if (m_level == 0) {
 		//	result.push_back(targetNode->m_entry);
 		//	vesselResult.push_back(this->m_entry);
