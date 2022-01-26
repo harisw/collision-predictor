@@ -26,10 +26,6 @@ using namespace std::chrono;
 #define I 10
 #define SMALL_I 5
 #define CALCULATE_INTERVAL 5
-//#define MAX_T 40
-//#define I 15
-//#define SMALL_I 5
-//#define CALCULATE_INTERVAL 6
 #define SHOW_WARN 1
 //#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
@@ -60,18 +56,10 @@ void naiveMethod() {
 	unsigned long total = 0;	
 	while (currentT < maxT) {
 		naiveResult.push_back({});
-		//if (currentT < 30) {
-		//	currentT++;
-		//	updateVesselLoc();
-		//	continue;
-		//}
-
 		auto start = high_resolution_clock::now();
 		for(int j=0; j<inputEvents[currentT].size(); j++) {
 			for (int k = 0; k < ourVessels.size(); k++) {
 				double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][j]->loc);
-				if (currentT == 56 && j == 314 && k == 24)
-					cout << "MOM" << endl;
 #ifdef SHOW_WARN
 				if (dist <= ourVessels[k]->r) {
 					naiveResult[currentT].push_back(make_pair(k, inputEvents[currentT][j]->id));
@@ -88,7 +76,6 @@ void naiveMethod() {
 		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
 		curDuration = 0;
 #endif // SHORT_EXP
-
 #ifndef SHORT_EXP
 		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
 			total += (curDuration / CALCULATE_INTERVAL);
@@ -109,12 +96,9 @@ void TPRMethod() {
 	int maxT = MAX_T;
 	set<int> inputIDs;
 	set<int>::iterator inputItt;
-
 	vector< vector<int> > candidateIDs;
 	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
 	TPRTree* tree = nullptr;
-	TPRTree* vesselTree = nullptr;
-
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
 	while (currentT < maxT) {
@@ -122,10 +106,7 @@ void TPRMethod() {
 		auto start = high_resolution_clock::now();
 		if (currentT % I == 0) {
 			tree = new TPRTree();
-			vesselTree = new TPRTree();
-
-			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *vesselTree, currentT);
-
+			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], currentT);
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
 				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
@@ -133,11 +114,7 @@ void TPRMethod() {
 			}
 		}
 
-
 		for (int j = 0; j < ourVessels.size(); j++) {
-			if (!inputIDs.empty())
-				cout << "TPR Entry: " << tree->getObjectCount() << " Lv; " << tree->getNodeCount() << " Nodes; "
-				<< tree->getLeafCount() << " Leaves" << endl;
 			vector<CEntry> tempCandidates;
 			Vessel* currArea = ourVessels[j];
 			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % I);
@@ -147,7 +124,6 @@ void TPRMethod() {
 #endif // SHOW_WARN
 			}
 		}
-
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
 		curDuration += duration.count();
@@ -182,73 +158,37 @@ void newHybridMethod() {
 	TPRTree* vesselTree = nullptr;
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
-	//vector<CEntry*> tempCandidates;
-	//vector<CEntry*> overlappingVessel;
 	set<int> tempCandidates;
 	set<int> overlappingVessel;
 	set<int>::iterator objItt, vesselItt;
 	while (currentT < maxT) {
 		hybridResult.push_back({});
 		auto start = high_resolution_clock::now();
-		//if (currentT < 30) {
-		//	currentT++;
-		//	updateVesselLoc();
-		//	continue;
-		//}
 		if (currentT % I == 0) {
 			tree = new TPRTree();
 			vesselTree = new TPRTree();
 			inputIDs.clear();
-			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], *vesselTree, currentT);
+			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], currentT, vesselTree);
 
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
 				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, 0, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
 					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
 			}
-			if (!inputIDs.empty())
-				cout << "TPR Entry: " << tree->getObjectCount() << " Lv; " << tree->getNodeCount() << " Nodes; "
-				<< tree->getLeafCount() << " Leaves" << endl;
 		}
-		//if (currentT == 59) {
-		//	InsertedTrackInfo tmp = tree->getTrackInfo(389);
-		//	cout << "389 at 59 on " << tmp.x << ", " << tmp.y << endl;
-		//}
-//		if (currentT % SMALL_I == 0) {
-//			if (inputIDs.empty())
-//				continue;
-//			for (int j = 0; j < ourVessels.size(); j++) {
-//				vector<CEntry> tempCandidates;
-//				Vessel* currArea = ourVessels[j];
-//				if (j != 223 && j != 175) continue;
-//				tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % I);
-//				for (int k = 0; k < tempCandidates.size(); k++) {
-//#ifdef SHOW_WARN
-//					hybridResult[currentT].push_back(make_pair(k, tempCandidates[k].m_id));
-//#endif // SHOW_WARN
-//				}
-//			}
-//		}
-
 		if (currentT % SMALL_I == 0) {
 			//vesselTree->PrintAllEntry();
 			tempCandidates.clear();
 			overlappingVessel.clear();
 			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, (currentT%I) + SMALL_I);
-			/*if (!tempCandidates.empty())
-				cout << "Overlapping Entry: " << tempCandidates.size() << " obj" << endl;*/
 		}
 
 
 		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
 			Vessel* currVessel = ourVessels[*vesselItt];
-
-			/*if (overlappingVessel[j]->m_id == 371)
-				cout << currentT << " Time    MAMAM371" << endl;*/
 			for (objItt = tempCandidates.begin(); objItt != tempCandidates.end(); objItt++) {	//FOR OBJ
 				double dist = Util::distance(currVessel->loc, inputEvents[currentT][*objItt]->loc);
 				//double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
-
 #ifdef SHOW_WARN
 				if (dist <= currVessel->r)
 					hybridResult[currentT].push_back(make_pair(*vesselItt, *objItt));
@@ -292,7 +232,7 @@ int main()
 
 
 	naiveMethod();
-	//TPRMethod();
+	TPRMethod();
 	newHybridMethod();
 	//refineAISData();
 	Util::exportResult(naiveResult, TPRResult, hybridResult);
