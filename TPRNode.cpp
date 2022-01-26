@@ -1225,8 +1225,6 @@ void TPRNode::RetrieveEntryRecursive(vector<CEntry*>& result)
 		if (!result.empty() && m_entry[0].m_id == result[0]->m_id)
 			return;
 		for (int j = 0; j < m_NumCntEntries; j++) {
-			if (m_entry[j].m_id == 371)
-				cout << "nodeID " << m_ID << " size : " << m_NumCntEntries << " HAHAHAH" << endl;
 			result.push_back(&m_entry[j]);
 		}
 		return;
@@ -1236,11 +1234,22 @@ void TPRNode::RetrieveEntryRecursive(vector<CEntry*>& result)
 			m_childNode[j]->RetrieveEntryRecursive(result);
 	}
 }
-void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime)
+
+void TPRNode::RetrieveEntryRecursive(set<int>& result)
+{
+	if (m_level == 0) {
+		for (int j = 0; j < m_NumCntEntries; j++)
+			result.insert(m_entry[j].m_id);
+	} else {
+		for (int j = 0; j < m_NumCntChild; j++)
+			m_childNode[j]->RetrieveEntryRecursive(result);
+	}
+}
+
+bool TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime)
 {
 	if (this == NULL || targetNode == NULL)
-		return;
-
+		return false;
 	//checking from the root
 	double myMBR[4], targetMBR[4];
 	extfuture_mbr_of_node(myMBR, this, queryTime, 0);
@@ -1263,6 +1272,25 @@ void TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>&
 		//		} 
 		//	}
 		//}
+		return true;
+	} else
+		return false;
+}
+
+void TPRNode::FindOverlappingRecursive(set<int>& result, set<int>& vesselResult, TPRNode* targetNode, double queryTime)
+{
+	if (this == NULL || targetNode == NULL)
+		return;
+	//checking from the root
+	double myMBR[4], targetMBR[4];
+	extfuture_mbr_of_node(myMBR, this, queryTime, 0);
+	targetNode->extfuture_mbr_of_node(targetMBR, targetNode, queryTime, 0);
+	//A.MinX > B.MaxX OR A.MaxX < B.MinX OR A.MaxY < B.MinY OR A.MinY > B.MaxY
+	bool isOverlapping = !(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3]);
+	//bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
+	if (isOverlapping) {
+		targetNode->RetrieveEntryRecursive(result);
+		//result.push_back(targetNode->m_entry);
+		this->RetrieveEntryRecursive(vesselResult);
 	}
-	return;
 }

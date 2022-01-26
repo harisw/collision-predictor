@@ -168,6 +168,6 @@ public: //hari
 	void GetOverlappingObject(vector<CEntry*>& outputList, int time);
 	void GetOverlappingRecursive(TPRNode* _curNode, vector<CEntry*>& outputList, int time);
 	void FindOverlapping(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRTree* targetTree, double queryTime);
-	//void FindOverlappingObject(vector<CEntry*> &result, TPRTree* targetTree, double queryTime);
+	void FindOverlapping(set<int>& result, set<int>& vesselResult, TPRTree* targetTree, double queryTime);
 	bool hasBufferZone = false;
 };

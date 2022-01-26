@@ -879,23 +879,23 @@ InsertedTrackInfo TPRTree::getTrackInfo(int id)
 	return InsertedTrackList[id];
 }
 
-void TPRTree::FindOverlapping(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRTree* targetTree, double queryTime)
+void TPRTree::FindOverlapping(set<int>& result, set<int>& vesselResult, TPRTree* targetTree, double queryTime)
 {
 	if (m_root == NULL || targetTree->m_root == NULL)
 		return;
-
-	//TPRNode* myNode = m_root;
-	//TPRNode* targetNode = targetTree->m_root;
-	//checking from the root
 	double myMBR[4], targetMBR[4];
 	m_root->extfuture_mbr_of_node(myMBR, m_root, queryTime, 0);
 	targetTree->m_root->extfuture_mbr_of_node(targetMBR, targetTree->m_root, queryTime, 0);
 
 	bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
+	bool childOverlap = false;
+	TPRNode* targetNode;
 	if (isOverlapping) {
 		for (int j = 0; j < m_root->getNumCntChild(); j++) {
 			for (int k = 0; k < targetTree->m_root->getNumCntChild(); k++) {
-				m_root->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, targetTree->m_root->m_childNode[k], queryTime);
+				targetNode = targetTree->m_root->m_childNode[k];
+				m_root->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, 
+					targetNode, queryTime);
 			}
 		}
 	}

@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <fstream>
+#include <set>
 #include "Miniball.hpp"
 
 using namespace std;
@@ -277,8 +278,10 @@ public: // CSKIM
 	double getBufferRadius(double _maxR) {
 		return m_MaxBufferRadius;
 	}
-	void FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime);
+	bool FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime);
+	void FindOverlappingRecursive(set<int>& result, set<int>& vesselResult, TPRNode* targetNode, double queryTime);
 	void RetrieveEntryRecursive(vector<CEntry*>& result);
+	void RetrieveEntryRecursive(set<int>& result);
 protected:
 	double m_MBRPoints[4][TREE_DIM];
 };

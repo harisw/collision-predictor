@@ -22,7 +22,7 @@ using namespace std::chrono;
 #define VESSEL_FILENAME "vessel_499.csv"
 #define FILENAME "events_Approach - Bypass1000.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 10		//GENERATED
+#define MAX_T 100		//GENERATED
 #define I 10
 #define SMALL_I 5
 #define CALCULATE_INTERVAL 5
@@ -182,8 +182,11 @@ void newHybridMethod() {
 	TPRTree* vesselTree = nullptr;
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
-	vector<CEntry*> tempCandidates;
-	vector<CEntry*> overlappingVessel;
+	//vector<CEntry*> tempCandidates;
+	//vector<CEntry*> overlappingVessel;
+	set<int> tempCandidates;
+	set<int> overlappingVessel;
+	set<int>::iterator objItt, vesselItt;
 	while (currentT < maxT) {
 		hybridResult.push_back({});
 		auto start = high_resolution_clock::now();
@@ -237,18 +240,18 @@ void newHybridMethod() {
 		}
 
 
-		for (int j = 0; j < overlappingVessel.size(); j++) {	//FOR VESS
-			CEntry* currVessel = overlappingVessel[j];
+		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
+			Vessel* currVessel = ourVessels[*vesselItt];
 
 			/*if (overlappingVessel[j]->m_id == 371)
 				cout << currentT << " Time    MAMAM371" << endl;*/
-			for (int k = 0; k < tempCandidates.size(); k++) {	//FOR OBJ
-				double dist = Util::distance(ourVessels[currVessel->m_id]->loc, inputEvents[currentT][tempCandidates[k]->m_id]->loc);
+			for (objItt = tempCandidates.begin(); objItt != tempCandidates.end(); objItt++) {	//FOR OBJ
+				double dist = Util::distance(currVessel->loc, inputEvents[currentT][*objItt]->loc);
 				//double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
 
 #ifdef SHOW_WARN
-				if (dist <= currVessel->m_BufferRadius)
-					hybridResult[currentT].push_back(make_pair(overlappingVessel[j]->m_id, tempCandidates[k]->m_id));
+				if (dist <= currVessel->r)
+					hybridResult[currentT].push_back(make_pair(*vesselItt, *objItt));
 
 #endif // SHOW_WARN
 			}
@@ -288,7 +291,7 @@ int main()
 	Util::importObjData(inputEvents, numOfObj);
 
 
-	//naiveMethod();
+	naiveMethod();
 	//TPRMethod();
 	newHybridMethod();
 	//refineAISData();
