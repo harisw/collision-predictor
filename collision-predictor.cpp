@@ -183,7 +183,6 @@ void newHybridMethod() {
 			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, (currentT%I) + SMALL_I);
 		}
 
-
 		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
 			Vessel* currVessel = ourVessels[*vesselItt];
 			for (objItt = tempCandidates.begin(); objItt != tempCandidates.end(); objItt++) {	//FOR OBJ
@@ -197,21 +196,21 @@ void newHybridMethod() {
 			}
 		}
 #pragma region TIME_MEASUREMENT
-//		auto stop = high_resolution_clock::now();
-//		auto duration = duration_cast<microseconds>(stop - start);
-//		curDuration += duration.count();
-//#ifdef SHORT_EXP
-//		total += curDuration;
-//		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
-//		curDuration = 0;
-//#endif // SHORT_EXP
-//#ifndef SHORT_EXP
-//		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
-//			total += (curDuration / CALCULATE_INTERVAL);
-//			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
-//			curDuration = 0;
-//		}
-//#endif
+		auto stop = high_resolution_clock::now();
+		auto duration = duration_cast<microseconds>(stop - start);
+		curDuration += duration.count();
+#ifdef SHORT_EXP
+		total += curDuration;
+		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
+		curDuration = 0;
+#endif // SHORT_EXP
+#ifndef SHORT_EXP
+		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
+			total += (curDuration / CALCULATE_INTERVAL);
+			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
+			curDuration = 0;
+		}
+#endif
 #pragma endregion
 		currentT++;
 		updateVesselLoc();
