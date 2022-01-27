@@ -162,10 +162,12 @@ public: // cskim
 	int cant_move_count_by_overflow_accul;
 	bool overflowed;
 
-
 public: //hari
-	void SetMBB();
+	void PrintAllEntry();
+	void PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int& count);
 	void GetOverlappingObject(vector<CEntry*>& outputList, int time);
 	void GetOverlappingRecursive(TPRNode* _curNode, vector<CEntry*>& outputList, int time);
-
+	void FindOverlapping(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRTree* targetTree, double queryTime);
+	void FindOverlapping(set<int>& result, set<int>& vesselResult, TPRTree* targetTree, double queryTime);
+	bool hasBufferZone = false;
 };

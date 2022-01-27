@@ -64,6 +64,7 @@ TPRNode::TPRNode(double _time, TPRNode** nodes, int _treeID)
 		m_entry = NULL; // disk based
 	}
 
+	m_MaxBufferRadius = -99999999;
 }
 
 TPRNode::TPRNode(TPRNode** nodes) // cskim
@@ -559,10 +560,7 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-	if (_InsertEntry.isObservable) {
-		m_hasObservableEntry = true;
-		m_ObservableEntriesID.push_back(_InsertEntry.m_id);
-	}
+
 	return true;
 }
 
@@ -591,6 +589,14 @@ void TPRNode::UpdateMBRbyEntry(double _time)
 		tempMBR[2] = max(m_entry[i].getX(), tempMBR[2]);
 		tempMBR[3] = max(m_entry[i].getY(), tempMBR[3]);
 		//Dr. Jung
+	}
+
+	if (hasBufferZone) {
+		//expand MBR by buffer radius
+		tempMBR[0] -= m_MaxBufferRadius;
+		tempMBR[1] -= m_MaxBufferRadius;
+		tempMBR[2] += m_MaxBufferRadius;
+		tempMBR[3] += m_MaxBufferRadius;
 	}
 
 	setMBR(tempMBR);
@@ -626,7 +632,13 @@ void TPRNode::UpdateMBRbyNode(double _time)
 		tempMBR[3] = max(extMBR[3], tempMBR[3]);
 
 	}
-
+	if (hasBufferZone) {
+		//expand MBR by buffer radius
+		tempMBR[0] -= m_MaxBufferRadius;
+		tempMBR[1] -= m_MaxBufferRadius;
+		tempMBR[2] += m_MaxBufferRadius;
+		tempMBR[3] += m_MaxBufferRadius;
+	}
 	setMBR(tempMBR);
 
 	double tempVBR[6] = { DBL_MAX, DBL_MAX, DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX };
@@ -1053,6 +1065,12 @@ void TPRNode::extfuture_mbr_of_node(double* _extMbr, TPRNode* _node, double _tim
 	_extMbr[1] = _node->m_MBR[1] + _node->m_VBR[1] * diffTime;
 	_extMbr[2] = _node->m_MBR[2] + _node->m_VBR[3] * diffTime;
 	_extMbr[3] = _node->m_MBR[3] + _node->m_VBR[4] * diffTime;
+	if (hasBufferZone) {
+		_extMbr[0] -= m_MaxBufferRadius;
+		_extMbr[0] -= m_MaxBufferRadius;
+		_extMbr[0] += m_MaxBufferRadius;
+		_extMbr[0] += m_MaxBufferRadius;
+	}
 	/*
 	// changed by CSK
 
@@ -1199,4 +1217,80 @@ void TPRNode::freeEntryMemory()
 		free(m_entry);
 	m_entry = NULL;
 
+}
+
+void TPRNode::RetrieveEntryRecursive(vector<CEntry*>& result)
+{
+	if (m_level == 0) {
+		if (!result.empty() && m_entry[0].m_id == result[0]->m_id)
+			return;
+		for (int j = 0; j < m_NumCntEntries; j++) {
+			result.push_back(&m_entry[j]);
+		}
+		return;
+	}
+	else {
+		for (int j = 0; j < m_NumCntChild; j++)
+			m_childNode[j]->RetrieveEntryRecursive(result);
+	}
+}
+
+void TPRNode::RetrieveEntryRecursive(set<int>& result)
+{
+	if (m_level == 0) {
+		for (int j = 0; j < m_NumCntEntries; j++)
+			result.insert(m_entry[j].m_id);
+	} else {
+		for (int j = 0; j < m_NumCntChild; j++)
+			m_childNode[j]->RetrieveEntryRecursive(result);
+	}
+}
+
+bool TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime)
+{
+	if (this == NULL || targetNode == NULL)
+		return false;
+	//checking from the root
+	double myMBR[4], targetMBR[4];
+	extfuture_mbr_of_node(myMBR, this, queryTime, 0);
+	targetNode->extfuture_mbr_of_node(targetMBR, targetNode, queryTime, 0);
+							//A.MinX > B.MaxX OR A.MaxX < B.MinX OR A.MaxY < B.MinY OR A.MinY > B.MaxY
+	bool isOverlapping = !(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3]);
+	//bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
+	if (isOverlapping) {
+		targetNode->RetrieveEntryRecursive(result);
+		//result.push_back(targetNode->m_entry);
+		this->RetrieveEntryRecursive(vesselResult);
+		//if (m_level == 0) {
+		//	result.push_back(targetNode->m_entry);
+		//	vesselResult.push_back(this->m_entry);
+		//}
+		//else {
+		//	for (int j = 0; j < this->getNumCntChild(); j++) {
+		//		for (int k = 0; k < targetNode->getNumCntChild(); k++) {
+		//			this->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, targetNode->m_childNode[k], queryTime);
+		//		} 
+		//	}
+		//}
+		return true;
+	} else
+		return false;
+}
+
+void TPRNode::FindOverlappingRecursive(set<int>& result, set<int>& vesselResult, TPRNode* targetNode, double queryTime)
+{
+	if (this == NULL || targetNode == NULL)
+		return;
+	//checking from the root
+	double myMBR[4], targetMBR[4];
+	extfuture_mbr_of_node(myMBR, this, queryTime, 0);
+	targetNode->extfuture_mbr_of_node(targetMBR, targetNode, queryTime, 0);
+	//A.MinX > B.MaxX OR A.MaxX < B.MinX OR A.MaxY < B.MinY OR A.MinY > B.MaxY
+	bool isOverlapping = !(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3]);
+	//bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
+	if (isOverlapping) {
+		targetNode->RetrieveEntryRecursive(result);
+		//result.push_back(targetNode->m_entry);
+		this->RetrieveEntryRecursive(vesselResult);
+	}
 }
