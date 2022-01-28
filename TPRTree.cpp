@@ -152,14 +152,18 @@ void TPRTree::PrintAllEntry()
 	bool vesselFlag[1000];
 	fill_n(vesselFlag, 1000, false);
 	int count = 0;
+	cout << "Node N : " << getNodeCount() << endl;
 	PrintAllEntryRecursive(m_root, vesselFlag, count);
+	
 	cout << "TOTAL entry : " << count << endl;
 }
 
 void TPRTree::PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int &count)
 {
 	if (node->getLevel() == 0) {
-		cout << "Leaf Node #" << node->m_ID << ": ";
+		cout << "Leaf Node #" << node->m_ID << endl;
+		count += node->getNumEntrys();
+		/*cout << "Leaf Node #" << node->m_ID << ": ";
 		for (int j = 0; j < node->getNumEntrys(); j++) {
 			int ent_id = node->getEntry()[j].m_id;
 			if (vesselFlag[ent_id])
@@ -168,40 +172,14 @@ void TPRTree::PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int &count
 				vesselFlag[ent_id] = true;
 			cout << "Entry " << ent_id << endl;
 			count++;
-		}
+		}*/
 	}
 	else {
+		cout << "Inside Node #" << node->m_ID << ": child :"<< node->getNumCntChild() << endl;
+
 		for (int j = 0; j < node->getNumCntChild(); j++)
 			PrintAllEntryRecursive(node->m_childNode[j], vesselFlag, count);
 	}
-}
-
-void TPRTree::GetOverlappingObject(vector<CEntry*>& outputList, int time)
-{
-
-	if (m_root == NULL)
-		return;
-	GetOverlappingRecursive(m_root, outputList, time);
-
-}
-
-void TPRTree::GetOverlappingRecursive(TPRNode* node, vector<CEntry*>& outputList, int time)
-{
-	if (node->getLevel() == 0) {
-		//cout << "Node #" << node->getID() << ",  " << node->getNumEntrys() << " Entries" << endl;
-		CEntry *entries = node->getEntry();
-		if (node->getEntry() != nullptr) {
-
-			//for (int j = 0; j < node->m_ObservableEntriesID.size(); j++)
-			//	outputList[j] = entries;
-//				cout << " Entry #" << entries[j].m_id << " ( " << entries[j].m_x << ", " << entries[j].m_y << ")" << endl;
-		}
-		return;
-	}
-
-	for (int i = 0; i < node->getNumCntChild(); i++)
-		GetOverlappingRecursive(node->m_childNode[i], outputList, time);
-	return;
 }
 
 bool TPRTree::Clear(void)
@@ -311,6 +289,8 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 					m_root->setMBR(parentMBR);
 					m_root->setVBR(parentVBR);
 					//m_root->UpdateMBRbyExt(_insertTime);//
+
+					m_FirstLeaf = tmp;
 				}
 				else
 				{
@@ -350,6 +330,7 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 		{
 			m_status = NORMAL;
 			_curNode->UpdateMBRbyExt(_insertTime);
+
 		}
 
 	}
@@ -425,6 +406,9 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 	{
 		_curNode->writeEntryFile();
 		_curNode->freeEntryMemory();
+
+		//hari
+
 	}
 
 	return true;

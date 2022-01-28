@@ -29,6 +29,7 @@ TPRNode::TPRNode(bool isNull)
 	m_VBR[5] = 0;
 	//m_entry = NULL;
 	m_parent = NULL;
+	m_NextLeaf = nullptr;
 }
 
 TPRNode::TPRNode(double _time, TPRNode** nodes, int _treeID)
@@ -65,6 +66,7 @@ TPRNode::TPRNode(double _time, TPRNode** nodes, int _treeID)
 	}
 
 	m_MaxBufferRadius = -99999999;
+	m_NextLeaf = nullptr;
 }
 
 TPRNode::TPRNode(TPRNode** nodes) // cskim
@@ -87,6 +89,7 @@ TPRNode::TPRNode(TPRNode** nodes) // cskim
 	m_parent = NULL;
 	m_NumCntEntries = 0;
 	m_NumCntChild = 0;
+	m_NextLeaf = nullptr;
 	//m_entry = NULL;
 }
 TPRNode::TPRNode(double _time)
@@ -112,6 +115,7 @@ TPRNode::TPRNode(double _time)
 	for (int i = 0; i < NUMNODE + 1; i++) {
 		m_childNode[i] = NULL;
 	}
+	m_NextLeaf = nullptr;
 }
 
 TPRNode::~TPRNode(void)

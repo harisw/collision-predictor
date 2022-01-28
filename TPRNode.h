@@ -282,6 +282,7 @@ public: // CSKIM
 	void FindOverlappingRecursive(set<int>& result, set<int>& vesselResult, TPRNode* targetNode, double queryTime);
 	void RetrieveEntryRecursive(vector<CEntry*>& result);
 	void RetrieveEntryRecursive(set<int>& result);
+	TPRNode* m_NextLeaf;
 protected:
 	double m_MBRPoints[4][TREE_DIM];
 };

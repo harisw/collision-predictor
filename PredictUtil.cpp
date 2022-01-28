@@ -41,6 +41,7 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVes
 	vector<bool> vesselCandidates;
 	vesselCandidates.insert(vesselCandidates.end(), inputVessel.size(), false);
 
+
 	for (int i = 0; i < inputObj.size(); i++) {
 		inputObj[i]->predictLoc(Util::interval);
 

@@ -22,7 +22,7 @@ using namespace std::chrono;
 #define VESSEL_FILENAME "vessel_499.csv"
 #define FILENAME "events_Approach - Bypass1000.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 100		//GENERATED
+#define MAX_T 30		//GENERATED
 #define I 10
 #define SMALL_I 5
 #define CALCULATE_INTERVAL 5
@@ -178,9 +178,11 @@ void newHybridMethod() {
 		}
 		if (currentT % SMALL_I == 0) {
 			//vesselTree->PrintAllEntry();
+			tree->PrintAllEntry();
 			tempCandidates.clear();
 			overlappingVessel.clear();
 			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, (currentT%I) + SMALL_I);
+
 		}
 
 		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
@@ -230,8 +232,8 @@ int main()
 	Util::importObjData(inputEvents, numOfObj);
 
 
-	naiveMethod();
-	TPRMethod();
+	/*naiveMethod();
+	TPRMethod();*/
 	newHybridMethod();
 	//refineAISData();
 	Util::exportResult(naiveResult, TPRResult, hybridResult);
