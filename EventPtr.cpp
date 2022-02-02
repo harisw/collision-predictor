@@ -20,7 +20,7 @@ Event::Event()
 {
 }
 
-Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y)
+Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r)
 {
 	t = _t;
 	id = _id;
@@ -28,6 +28,7 @@ Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y)
 	vy = _vy;
 	loc = Point(_x, _y);
 	extLoc = Point(0, 0);
+	r = _r;
 }
 
 void Event::predictLoc(int futureT) {

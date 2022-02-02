@@ -22,12 +22,12 @@ using namespace std::chrono;
 #define VESSEL_FILENAME "vessel_499.csv"
 #define FILENAME "events_Approach - Bypass1000.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 30		//GENERATED
-#define I 10
-#define SMALL_I 5
+#define MAX_T 25		//GENERATED
+#define I 12
+#define SMALL_I 4
 #define CALCULATE_INTERVAL 5
 #define SHOW_WARN 1
-//#define SHORT_EXP
+#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
 vector<Vessel*> ourVessels;
 
@@ -58,12 +58,12 @@ void naiveMethod() {
 		naiveResult.push_back({});
 		auto start = high_resolution_clock::now();
 		for(int j=0; j<inputEvents[currentT].size(); j++) {
-			for (int k = 0; k < ourVessels.size(); k++) {
-				double dist = Util::distance(ourVessels[k]->loc, inputEvents[currentT][j]->loc);
+			for (int k = j+1; k < inputEvents[currentT].size()-1; k++) {
+				double dist = Util::distance(inputEvents[currentT][j]->loc, inputEvents[currentT][k]->loc);
+				double r = max(inputEvents[currentT][j]->r, inputEvents[currentT][k]->r);
 #ifdef SHOW_WARN
-				if (dist <= ourVessels[k]->r) {
-					naiveResult[currentT].push_back(make_pair(k, inputEvents[currentT][j]->id));
-				}
+				if (dist <= r)
+					naiveResult[currentT].push_back(make_pair(inputEvents[currentT][j]->id, inputEvents[currentT][k]->id));
 #endif // SHOW_WARN
 			}
 		}
@@ -85,10 +85,10 @@ void naiveMethod() {
 #endif
 #pragma endregion
 		currentT++;
-		updateVesselLoc();
+		//updateVesselLoc();
 	}
 	cout << " Total duration " << total << endl;
-	ourVessels = buVessels;
+	//ourVessels = buVessels;
 }
 void TPRMethod() {
 	cout << endl << "TPR Only" << endl;
@@ -178,7 +178,7 @@ void newHybridMethod() {
 		}
 		if (currentT % SMALL_I == 0) {
 			//vesselTree->PrintAllEntry();
-			tree->PrintAllEntry();
+			//tree->PrintAllEntry();
 			tempCandidates.clear();
 			overlappingVessel.clear();
 			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, (currentT%I) + SMALL_I);
@@ -228,117 +228,121 @@ int main()
 	Util::maxT = MAX_T;
 	Util::interval = I;
 	Util::smInterval = SMALL_I;
-	Util::importVesselData(ourVessels, buVessels, numOfVessel);
+	//Util::importVesselData(ourVessels, buVessels, numOfVessel);
 	Util::importObjData(inputEvents, numOfObj);
 
 
-	/*naiveMethod();
-	TPRMethod();*/
-	newHybridMethod();
+	naiveMethod();
+	//TPRMethod();
+	//newHybridMethod();
 	//refineAISData();
-	Util::exportResult(naiveResult, TPRResult, hybridResult);
+	//Util::exportResult(naiveResult, TPRResult, hybridResult);
 }
 
 //
 //
-//void refineAISData()
-//{
-//	string filename("events_AIS.csv");
-//	fstream newfile;
-//	newfile.open(filename, ios::in); //open a file to perform read operation using file object
-//	vector< vector<Event*> > collectedEvents = {};
-//	int objMax = 120;
-//	if (newfile.is_open()) {   //checking whether the file is open
-//		string tp;
-//		int global_itt = 0;
-//		int curr_itt;
-//		int obj_id;
-//		int obj_count = 0;
-//		string token, vx, vy, x, y;
-//
-//		collectedEvents.push_back({});
-//		collectedEvents[0].insert(collectedEvents[0].end(), objMax, nullptr);
-//
-//		int collective_itt = 0;
-//		bool first = true;
-//		bool boolID[380] = { 0 };
-//		Event* defaultEv = nullptr;
-//		getline(newfile, tp);		//skip header
-//		while (getline(newfile, tp)) { //read data from file object and put it into string.
-//			istringstream tokenizer(tp);
-//
-//			getline(tokenizer, token, '|'); //get timestamp
-//			curr_itt = stoi(token);
-//			if (curr_itt > global_itt) {
-//				for (int j = 0; j < objMax; j++) {
-//					if (collectedEvents[global_itt][j] == nullptr) {
-//						if (global_itt == 0) {
-//							Event* currentEv = new Event(global_itt, j, defaultEv->vx, defaultEv->vy,
-//								defaultEv->loc.x + defaultEv->vx, defaultEv->loc.y + defaultEv->vy);
-//							collectedEvents[global_itt][j] = currentEv;
-//						}
-//						else {
-//							Event* prevEv = collectedEvents[global_itt - 1][j];
-//							Event* currentEv = new Event(global_itt, j, prevEv->vx, prevEv->vy,
-//								prevEv->loc.x + prevEv->vx, prevEv->loc.y + prevEv->vy);
-//							collectedEvents[global_itt][j] = currentEv;
-//						}
-//					}
-//				}
-//				collectedEvents.push_back({});
-//				collectedEvents[curr_itt].insert(collectedEvents[curr_itt].end(), objMax + 1, nullptr);
-//				global_itt = curr_itt;
-//			}
-//
-//			if (global_itt >= 1000)
-//				break;
-//
-//			getline(tokenizer, x, '|');
-//			getline(tokenizer, y, '|');
-//			getline(tokenizer, token, '|');
-//			obj_id = stoi(token);
-//
-//			getline(tokenizer, token, '|');
-//			istringstream tokenizer2(token);
-//			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
-//
-//
-//			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y));
-//			collectedEvents[global_itt][obj_id] = currentEv;
-//			if (global_itt == 0)
-//				defaultEv = currentEv;
-//		}
-//		numOfObj = obj_id;
-//		newfile.close(); //close the file object.
-//	}
-//	else {
-//		cerr << "Error Opening File!!" << endl;
-//		return;
-//	}
-//	//CREATE NEW FILE
-//
-//	ostringstream oss;
-//	oss << "refined_events_AIS.txt";
-//	filename = oss.str();
-//
-//	ofstream outfile;
-//	outfile.open(filename, ofstream::trunc); // opens the file
-//	if (!outfile) { // file couldn't be opened
-//		cerr << "Error: file could not be opened" << endl;
-//		exit(1);
-//	}
-//
-//	int global_itt = 0;
-//	int max_itt = 105;
-//	double speedX, speedY;
-//	while (true && global_itt < max_itt) {
-//		bool hasFinished = true;
-//		for (int i = 0; i < objMax; ++i) {
-//
-//			outfile << global_itt << "|" << collectedEvents[global_itt][i]->id << "|" << collectedEvents[global_itt][i]->vx << ","
-//				<< collectedEvents[global_itt][i]->vy << "|" << collectedEvents[global_itt][i]->loc.x << "," << collectedEvents[global_itt][i]->loc.y << endl;
-//		}
-//		global_itt++;
-//	}
-//	outfile.close();
-//}
+void refineAISData()
+{
+	string filename("events_AIS.csv");
+	fstream newfile;
+	newfile.open(filename, ios::in); //open a file to perform read operation using file object
+	vector< vector<Event*> > collectedEvents = {};
+	int objMax = 120;
+	if (newfile.is_open()) {   //checking whether the file is open
+		string tp;
+		int global_itt = 0;
+		int curr_itt;
+		int obj_id;
+		int obj_count = 0;
+		string token, vx, vy, x, y, r;
+
+		collectedEvents.push_back({});
+		collectedEvents[0].insert(collectedEvents[0].end(), objMax, nullptr);
+
+		int collective_itt = 0;
+		bool first = true;
+		bool boolID[380] = { 0 };
+		Event* defaultEv = nullptr;
+		getline(newfile, tp);		//skip header
+		while (getline(newfile, tp)) { //read data from file object and put it into string.
+			istringstream tokenizer(tp);
+
+			getline(tokenizer, token, '|'); //get timestamp
+			curr_itt = stoi(token);
+			if (curr_itt > global_itt) {
+				for (int j = 0; j < objMax; j++) {
+					if (collectedEvents[global_itt][j] == nullptr) {
+						if (global_itt == 0) {
+							Event* currentEv = new Event(global_itt, j, defaultEv->vx, defaultEv->vy,
+								defaultEv->loc.x + defaultEv->vx, defaultEv->loc.y + defaultEv->vy);
+							collectedEvents[global_itt][j] = currentEv;
+						}
+						else {
+							Event* prevEv = collectedEvents[global_itt - 1][j];
+							Event* currentEv = new Event(global_itt, j, prevEv->vx, prevEv->vy,
+								prevEv->loc.x + prevEv->vx, prevEv->loc.y + prevEv->vy);
+							collectedEvents[global_itt][j] = currentEv;
+						}
+					}
+				}
+				collectedEvents.push_back({});
+				collectedEvents[curr_itt].insert(collectedEvents[curr_itt].end(), objMax + 1, nullptr);
+				global_itt = curr_itt;
+			}
+
+			if (global_itt >= 1000)
+				break;
+
+			getline(tokenizer, token, '|');
+			obj_id = stoi(token);
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer2(token);
+			getline(tokenizer2, x, ','); getline(tokenizer2, y, ',');
+
+			getline(tokenizer, token, '|');
+			istringstream tokenizer3(token);
+			getline(tokenizer3, vx, ','); getline(tokenizer3, vy, ',');
+
+			getline(tokenizer, r, '|');
+
+			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y), stod(r));
+			collectedEvents[global_itt][obj_id] = currentEv;
+			if (global_itt == 0)
+				defaultEv = currentEv;
+		}
+		numOfObj = obj_id;
+		newfile.close(); //close the file object.
+	}
+	else {
+		cerr << "Error Opening File!!" << endl;
+		return;
+	}
+	//CREATE NEW FILE
+
+	ostringstream oss;
+	oss << "refined_events_AIS.txt";
+	filename = oss.str();
+
+	ofstream outfile;
+	outfile.open(filename, ofstream::trunc); // opens the file
+	if (!outfile) { // file couldn't be opened
+		cerr << "Error: file could not be opened" << endl;
+		exit(1);
+	}
+
+	int global_itt = 0;
+	int max_itt = 105;
+	double speedX, speedY;
+	while (true && global_itt < max_itt) {
+		bool hasFinished = true;
+		for (int i = 0; i < objMax; ++i) {
+
+			outfile << global_itt << "|" << collectedEvents[global_itt][i]->id << "|" << collectedEvents[global_itt][i]->vx << ","
+				<< collectedEvents[global_itt][i]->vy << "|" << collectedEvents[global_itt][i]->loc.x << "," << collectedEvents[global_itt][i]->loc.y
+				<< "|" << collectedEvents[global_itt][i]->r << endl;
+		}
+		global_itt++;
+	}
+	outfile.close();
+}

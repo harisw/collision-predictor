@@ -8,7 +8,9 @@
 #include "ICMSCalculator.h"
 #include "time.h"
 #include <stdio.h>
-
+#include <algorithm>
+using namespace std;
+#define HORIZON 10
 struct CPosition
 {
 	double x;				//경도 위치
@@ -36,6 +38,14 @@ public:
 		m_id = _id;
 		m_time = _time;
 		m_BufferRadius = _radius;
+		
+		double dest_x = m_x + HORIZON * m_vx;
+		double dest_y = m_y + HORIZON * m_vy;
+
+		m_MBR[0] = min(m_x, dest_x) - _radius;
+		m_MBR[0] = min(m_y, dest_y) - _radius;
+		m_MBR[0] = max(m_x, dest_x) + -_radius;
+		m_MBR[0] = max(m_y, dest_y) + -_radius;
 	}
 
 	CEntry* getEntry() {
@@ -77,7 +87,9 @@ public:
 	double m_extX, m_extY, m_extZ;
 	double  m_vx, m_vy, m_vz;
 	int m_byEnvironment;
+	//hari
 	double m_BufferRadius;
+	double m_MBR[4];
 
 public: // for test
 	bool updated = false;

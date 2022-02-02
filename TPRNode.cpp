@@ -29,7 +29,6 @@ TPRNode::TPRNode(bool isNull)
 	m_VBR[5] = 0;
 	//m_entry = NULL;
 	m_parent = NULL;
-	m_NextLeaf = nullptr;
 }
 
 TPRNode::TPRNode(double _time, TPRNode** nodes, int _treeID)
@@ -66,7 +65,6 @@ TPRNode::TPRNode(double _time, TPRNode** nodes, int _treeID)
 	}
 
 	m_MaxBufferRadius = -99999999;
-	m_NextLeaf = nullptr;
 }
 
 TPRNode::TPRNode(TPRNode** nodes) // cskim
@@ -89,7 +87,6 @@ TPRNode::TPRNode(TPRNode** nodes) // cskim
 	m_parent = NULL;
 	m_NumCntEntries = 0;
 	m_NumCntChild = 0;
-	m_NextLeaf = nullptr;
 	//m_entry = NULL;
 }
 TPRNode::TPRNode(double _time)
@@ -115,7 +112,6 @@ TPRNode::TPRNode(double _time)
 	for (int i = 0; i < NUMNODE + 1; i++) {
 		m_childNode[i] = NULL;
 	}
-	m_NextLeaf = nullptr;
 }
 
 TPRNode::~TPRNode(void)
@@ -565,6 +561,8 @@ bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
 
+	if (!m_HasOverlap)
+		CheckOverlappingArea();
 	return true;
 }
 
@@ -1250,6 +1248,20 @@ void TPRNode::RetrieveEntryRecursive(set<int>& result)
 	}
 }
 
+void TPRNode::CheckOverlappingArea()
+{
+	//check only last inserted entry against another
+	double* myMBR = m_entry[m_NumCntEntries - 1].m_MBR;
+	double* targetMBR;
+	for (int j = 0; j < m_NumCntEntries - 1; j++){
+		targetMBR = m_entry[j].m_MBR;
+		if (!(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3])) {
+			this->m_HasOverlap = true;
+			break;
+		}
+	}
+}
+
 bool TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime)
 {
 	if (this == NULL || targetNode == NULL)
@@ -1258,7 +1270,8 @@ bool TPRNode::FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>&
 	double myMBR[4], targetMBR[4];
 	extfuture_mbr_of_node(myMBR, this, queryTime, 0);
 	targetNode->extfuture_mbr_of_node(targetMBR, targetNode, queryTime, 0);
-							//A.MinX > B.MaxX OR A.MaxX < B.MinX OR A.MaxY < B.MinY OR A.MinY > B.MaxY
+							//A.MinX > B.MaxX OR A.MaxX < B.MinX
+	//OR A.MaxY < B.MinY OR A.MinY > B.MaxY
 	bool isOverlapping = !(myMBR[0] > targetMBR[2] || myMBR[2] < targetMBR[0] || myMBR[3] < targetMBR[1] || myMBR[1] > targetMBR[3]);
 	//bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
 	if (isOverlapping) {

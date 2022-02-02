@@ -7,13 +7,10 @@
 
 #define TREE_TYPE_MEMORY_OR_DISK 0
 
-#define CAPACITY 21
+#define CAPACITY 11
 #define NUMNODE 5
 #define UNDERFLOW_RATIO 0.4
 #define PI 3.14159265f
-
-//hari
-#define TREE_DIM 2
 
 #ifndef max
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -282,9 +279,6 @@ public: // CSKIM
 	void FindOverlappingRecursive(set<int>& result, set<int>& vesselResult, TPRNode* targetNode, double queryTime);
 	void RetrieveEntryRecursive(vector<CEntry*>& result);
 	void RetrieveEntryRecursive(set<int>& result);
-	TPRNode* m_NextLeaf;
-protected:
-	double m_MBRPoints[4][TREE_DIM];
+	void CheckOverlappingArea();
+	bool m_HasOverlap = false;
 };
-
-
