@@ -112,7 +112,9 @@ void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
 			istringstream tokenizer2(token);
 			getline(tokenizer2, vx, ','); getline(tokenizer2, vy, ',');
 
-			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y));
+			getline(tokenizer, token, '|');
+			r = stod(token);
+			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y), r);
 			input[global_itt].push_back(currentEv);
 		}
 		objNum = obj_id;

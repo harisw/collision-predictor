@@ -36,32 +36,33 @@ void cleanVect(vector<Vessel*>& input) {
 	input = res;
 }
 
-void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, int currTime, TPRTree* const &vesselTree)
+void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj, int currTime)
 {
-	vector<bool> vesselCandidates;
-	vesselCandidates.insert(vesselCandidates.end(), inputVessel.size(), false);
-
 
 	for (int i = 0; i < inputObj.size(); i++) {
-		inputObj[i]->predictLoc(Util::interval);
+		if (inputObj[i]->hasPredicted)
+			continue;
+	
+		if(inputObj[i]->extLoc == nullptr)
+			inputObj[i]->predictLoc(Util::interval);
 
-		Point a = inputObj[i]->loc;
-		Point b = inputObj[i]->extLoc;
-		for (int j = 0; j < inputVessel.size(); j++) {
-			double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
-			double stretchedBufferRadius = inputVessel[j]->filterRad;
+		for (int j = i+1; j < inputObj.size()-1; j++) {
+			
+			if(inputObj[j]->extLoc == nullptr)
+				inputObj[j]->predictLoc(Util::interval);
+
+			double dist = Util::lineToLineDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc, *inputObj[j]->extLoc);
+			//double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
+
+			double stretchedBufferRadius = max(inputObj[i]->r, inputObj[j]->r) * Util::interval;
 			if (dist <= stretchedBufferRadius) {
 				inputIDs.insert(inputObj[i]->id);
-				vesselCandidates[j] = true;
+				inputIDs.insert(inputObj[j]->id);
+				inputObj[i]->hasPredicted = true;
+				inputObj[j]->hasPredicted = true;
 				break;
 			}
 		}
 	}
-
-	if (vesselTree != 0) {
-		for (int j = 0; j < vesselCandidates.size(); j++) {
-			if (vesselCandidates[j])
-				vesselTree->Insert(CEntry(inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, inputVessel[j]->r));
-		}
-	}
+	return;
 }

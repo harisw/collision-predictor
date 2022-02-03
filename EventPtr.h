@@ -38,7 +38,7 @@ public:
 	double vy;
 	double r;
 	Point loc;
-	Point extLoc;
+	Point* extLoc;
 	bool filtered = false;
 	bool hasPredicted = false;
 	Event();
