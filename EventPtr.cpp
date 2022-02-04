@@ -32,6 +32,5 @@ Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y, doub
 }
 
 void Event::predictLoc(int futureT) {
-	extLoc = new Point(loc.x + (futureT * vx), loc.y + (futureT * vy));
-	hasPredicted = true;
+	extLoc = new Point(loc.x + ((double)futureT * vx), loc.y + ((double)futureT * vy));
 }

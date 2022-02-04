@@ -39,27 +39,36 @@ void cleanVect(vector<Vessel*>& input) {
 void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj, int currTime)
 {
 
-	for (int i = 0; i < inputObj.size(); i++) {
-		if (inputObj[i]->hasPredicted)
+	for (int i = 0; i < inputObj.size()-1; i++) {
+		if (inputObj[i]->isCandidate)
 			continue;
 	
 		if(inputObj[i]->extLoc == nullptr)
 			inputObj[i]->predictLoc(Util::interval);
 
-		for (int j = i+1; j < inputObj.size()-1; j++) {
+		for (int j = i+1; j < inputObj.size(); j++) {
 			
 			if(inputObj[j]->extLoc == nullptr)
 				inputObj[j]->predictLoc(Util::interval);
 
+
+			if (i == 190 && j == 312)
+				cout << "MAM" << endl;
 			double dist = Util::lineToLineDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc, *inputObj[j]->extLoc);
 			//double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
+			double distA = Util::lineToPointDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc);
+			double distB = Util::lineToPointDistance(inputObj[i]->loc, *inputObj[i]->extLoc, *inputObj[j]->extLoc);
+			
+			double distC = Util::lineToPointDistance(inputObj[j]->loc, *inputObj[j]->extLoc, inputObj[i]->loc);
+			double distD = Util::lineToPointDistance(inputObj[j]->loc, *inputObj[j]->extLoc, *inputObj[i]->extLoc);
+
 
 			double stretchedBufferRadius = max(inputObj[i]->r, inputObj[j]->r) * Util::interval;
 			if (dist <= stretchedBufferRadius) {
 				inputIDs.insert(inputObj[i]->id);
 				inputIDs.insert(inputObj[j]->id);
-				inputObj[i]->hasPredicted = true;
-				inputObj[j]->hasPredicted = true;
+				inputObj[i]->isCandidate = true;
+				inputObj[j]->isCandidate = true;
 				break;
 			}
 		}

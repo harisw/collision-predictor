@@ -20,14 +20,14 @@ using namespace std::chrono;
 #include "PredictUtil.h"
 #include "Util.h"
 #define VESSEL_FILENAME "vessel_499.csv"
-#define FILENAME "events_Approach - U Turn1000.txt"
+#define FILENAME "events_Approach - U Turn502.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 25		//GENERATED
-#define I 12
-#define SMALL_I 4
+#define MAX_T 10		//GENERATED
+#define I 10
+#define SMALL_I 5
 #define CALCULATE_INTERVAL 5
 #define SHOW_WARN 1
-#define SHORT_EXP
+//#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
 vector<Vessel*> ourVessels;
 
@@ -157,8 +157,9 @@ void newHybridMethod() {
 	TPRTree* tree = nullptr;
 	unsigned long curDuration = 0;
 	unsigned long total = 0;
-	set<int> tempCandidates;
-	set<int>::iterator objItt;
+	vector<int> tempCandidates;
+	vector<int>::iterator candidateItt, secondItt;
+	//set<int>::iterator objItt;
 	while (currentT < maxT) {
 		hybridResult.push_back({});
 		auto start = high_resolution_clock::now();
@@ -169,17 +170,38 @@ void newHybridMethod() {
 
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
-				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, 0, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
-					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
+				tree->Insert(CEntry(*inputItt, 0, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
+					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0, inputEvents[currentT][*inputItt]->r));
 			}
 		}
 		if (currentT % SMALL_I == 0) {
 			//tree->PrintAllEntry();
+			//return;
 			tempCandidates.clear();
-			//vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, (currentT%I) + SMALL_I);
+			tree->FindOverlapping(tempCandidates, (currentT%I) + SMALL_I);
 
 		}
 
+		if (!tempCandidates.empty()) {
+			for (candidateItt = tempCandidates.begin(); candidateItt != tempCandidates.end() - 1; candidateItt++) {
+				if (inputEvents[currentT][*candidateItt]->isCollide)
+					continue;
+
+				for (secondItt = tempCandidates.begin() + 1; secondItt != tempCandidates.end(); secondItt++) {
+
+					double dist = Util::distance(inputEvents[currentT][*candidateItt]->loc, inputEvents[currentT][*secondItt]->loc);
+
+					double r = max(inputEvents[currentT][*candidateItt]->r, inputEvents[currentT][*secondItt]->r);
+#ifdef SHOW_WARN
+					if (dist <= r) {
+						hybridResult[currentT].push_back(make_pair(inputEvents[currentT][*candidateItt]->id, inputEvents[currentT][*secondItt]->id));
+						inputEvents[currentT][*candidateItt]->isCollide = true;
+						inputEvents[currentT][*secondItt]->isCollide = true;
+					}
+#endif // SHOW_WARN
+				}
+			}
+		}
 //		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
 //			Vessel* currVessel = ourVessels[*vesselItt];
 //			for (objItt = tempCandidates.begin(); objItt != tempCandidates.end(); objItt++) {	//FOR OBJ
@@ -227,11 +249,11 @@ int main()
 	Util::importObjData(inputEvents, numOfObj);
 
 
-	naiveMethod();
+	//naiveMethod();
 	//TPRMethod();
 	newHybridMethod();
 	//refineAISData();
-	//Util::exportResult(naiveResult, TPRResult, hybridResult);
+	Util::exportResult(naiveResult, TPRResult, hybridResult);
 }
 
 //

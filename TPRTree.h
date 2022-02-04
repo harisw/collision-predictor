@@ -164,10 +164,10 @@ public: // cskim
 
 public: //hari
 	void PrintAllEntry();
-	void PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int& count);
-	void FindOverlapping(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRTree* targetTree, double queryTime);
-	void FindOverlapping(set<int>& result, set<int>& vesselResult, TPRTree* targetTree, double queryTime);
+	void PrintAllEntryRecursive(TPRNode* node, int& count);
+	void FindOverlapping(vector<int>& result, double queryTime);
+	//void FindOverlapping(set<int>& result, set<int>& vesselResult, TPRTree* targetTree, double queryTime);
 	bool hasBufferZone = false;
-	TPRNode** m_LeafNodes;
-	TPRNode* m_FirstLeaf;
+	int candidateRecords[MAX_ENTRY];
+	int candidateCount = 0;
 };

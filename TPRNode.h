@@ -7,6 +7,7 @@
 
 #define TREE_TYPE_MEMORY_OR_DISK 0
 
+#define MAX_ENTRY 110000
 #define CAPACITY 11
 #define NUMNODE 5
 #define UNDERFLOW_RATIO 0.4
@@ -267,6 +268,8 @@ public: // CSKIM
 	}
 
 	//Hari
+	//int (&candidateRecords)[MAX_ENTRY];
+	//int &candidateCount;
 	bool hasBufferZone = false;
 	double m_MaxBufferRadius;
 	void setMaxBufferRadius(double _maxR) {
@@ -275,10 +278,10 @@ public: // CSKIM
 	double getBufferRadius(double _maxR) {
 		return m_MaxBufferRadius;
 	}
-	bool FindOverlappingRecursive(vector<CEntry*>& result, vector<CEntry*>& vesselResult, TPRNode* targetNode, double queryTime);
-	void FindOverlappingRecursive(set<int>& result, set<int>& vesselResult, TPRNode* targetNode, double queryTime);
-	void RetrieveEntryRecursive(vector<CEntry*>& result);
-	void RetrieveEntryRecursive(set<int>& result);
+	void FindOverlappingRecursive(vector<int>& result, double queryTime);
+	//void RetrieveEntryRecursive(vector<CEntry*>& result);
+	//void RetrieveEntryRecursive(set<int>& result);
 	void CheckOverlappingArea();
 	bool m_HasOverlap = false;
+	vector<int> overlappingID;
 };

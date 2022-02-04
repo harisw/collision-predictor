@@ -40,7 +40,8 @@ public:
 	Point loc;
 	Point* extLoc;
 	bool filtered = false;
-	bool hasPredicted = false;
+	bool isCandidate = false;
+	bool isCollide = false;
 	Event();
 	Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r = 0);
 	void predictLoc(int futureT);

@@ -149,36 +149,30 @@ void  TPRTree::ClearNodeRecursive(TPRNode* _curNode)
 
 void TPRTree::PrintAllEntry()
 {
-	bool vesselFlag[1000];
-	fill_n(vesselFlag, 1000, false);
 	int count = 0;
 	cout << "Node N : " << getNodeCount() << endl;
-	PrintAllEntryRecursive(m_root, vesselFlag, count);
+	PrintAllEntryRecursive(m_root, count);
 	
 	cout << "TOTAL entry : " << count << endl;
 }
 
-void TPRTree::PrintAllEntryRecursive(TPRNode* node, bool* vesselFlag, int &count)
+void TPRTree::PrintAllEntryRecursive(TPRNode* node, int &count)
 {
 	if (node->getLevel() == 0) {
-		cout << "Leaf Node #" << node->m_ID << endl;
+		//cout << "Leaf Node #" << node->m_ID << endl;
 		count += node->getNumEntrys();
-		/*cout << "Leaf Node #" << node->m_ID << ": ";
+		cout << "Leaf Node #" << node->m_ID << ": ";
 		for (int j = 0; j < node->getNumEntrys(); j++) {
 			int ent_id = node->getEntry()[j].m_id;
-			if (vesselFlag[ent_id])
-				cout << "DUPLICATE " << ent_id << "!! ";
-			else
-				vesselFlag[ent_id] = true;
 			cout << "Entry " << ent_id << endl;
 			count++;
-		}*/
+		}
 	}
 	else {
 		cout << "Inside Node #" << node->m_ID << ": child :"<< node->getNumCntChild() << endl;
 
 		for (int j = 0; j < node->getNumCntChild(); j++)
-			PrintAllEntryRecursive(node->m_childNode[j], vesselFlag, count);
+			PrintAllEntryRecursive(node->m_childNode[j], count);
 	}
 }
 
@@ -290,7 +284,6 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 					m_root->setVBR(parentVBR);
 					//m_root->UpdateMBRbyExt(_insertTime);//
 
-					m_FirstLeaf = tmp;
 				}
 				else
 				{
@@ -407,8 +400,6 @@ bool TPRTree::InsertRecursive(TPRNode* _curNode, CEntry _input, double _insertTi
 		_curNode->writeEntryFile();
 		_curNode->freeEntryMemory();
 
-		//hari
-
 	}
 
 	return true;
@@ -423,6 +414,8 @@ bool TPRTree::Insert(CEntry _input)
 		return false;
 	}
 
+	if (_input.m_id == 251 || _input.m_id == 309)
+		cout << "MAM" << endl;
 
 	m_status = NORMAL;
 	m_InputEntry.setID(-1);
@@ -863,24 +856,22 @@ InsertedTrackInfo TPRTree::getTrackInfo(int id)
 	return InsertedTrackList[id];
 }
 
-void TPRTree::FindOverlapping(set<int>& result, set<int>& vesselResult, TPRTree* targetTree, double queryTime)
+void TPRTree::FindOverlapping(vector<int>& result, double queryTime)
 {
-	if (m_root == NULL || targetTree->m_root == NULL)
-		return;
-	double myMBR[4], targetMBR[4];
-	m_root->extfuture_mbr_of_node(myMBR, m_root, queryTime, 0);
-	targetTree->m_root->extfuture_mbr_of_node(targetMBR, targetTree->m_root, queryTime, 0);
-
-	bool isOverlapping = !((myMBR[0] > targetMBR[2] || targetMBR[0] > myMBR[2]) || (myMBR[1] > targetMBR[3] || targetMBR[1] > myMBR[3]));
-	bool childOverlap = false;
-	TPRNode* targetNode;
-	if (isOverlapping) {
-		for (int j = 0; j < m_root->getNumCntChild(); j++) {
-			for (int k = 0; k < targetTree->m_root->getNumCntChild(); k++) {
-				targetNode = targetTree->m_root->m_childNode[k];
-				m_root->m_childNode[j]->FindOverlappingRecursive(result, vesselResult, 
-					targetNode, queryTime);
+	for (int j = 0; j < m_root->overlappingID.size(); j++) {
+		result.push_back(m_root->overlappingID[j]);
+	}
+	if (m_root->getLevel() > 0) {
+		/*if (m_root->m_HasOverlap) {
+			CEntry* m_entries = m_root->getEntry();
+			for (int j = 0; j < m_root->getNumEntrys(); j++) {
+				result.push_back(m_entries[j].m_id);
 			}
+		}
+	}
+	else {*/
+		for (int j = 0; j < m_root->getNumCntChild(); j++) {
+			m_root->m_childNode[j]->FindOverlappingRecursive(result, queryTime);
 		}
 	}
 	return;

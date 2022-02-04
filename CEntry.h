@@ -43,9 +43,9 @@ public:
 		double dest_y = m_y + HORIZON * m_vy;
 
 		m_MBR[0] = min(m_x, dest_x) - _radius;
-		m_MBR[0] = min(m_y, dest_y) - _radius;
-		m_MBR[0] = max(m_x, dest_x) + -_radius;
-		m_MBR[0] = max(m_y, dest_y) + -_radius;
+		m_MBR[1] = min(m_y, dest_y) - _radius;
+		m_MBR[2] = max(m_x, dest_x) + -_radius;
+		m_MBR[3] = max(m_y, dest_y) + -_radius;
 	}
 
 	CEntry* getEntry() {
@@ -90,6 +90,7 @@ public:
 	//hari
 	double m_BufferRadius;
 	double m_MBR[4];
+	int m_IsCandidate = false;
 
 public: // for test
 	bool updated = false;

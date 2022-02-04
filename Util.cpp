@@ -33,7 +33,6 @@ double Util::lineToPointDistance(Point a, Point b, Point c)
 
 double Util::lineToLineDistance(Point a1, Point a2, Point b1, Point b2)
 {
-	double result = 99999999;
 	double distA, distB;
 	distA = min(lineToPointDistance(b1, b2, a1), lineToPointDistance(b1, b2, a2));
 	distB = min(lineToPointDistance(a1, a2, b1), lineToPointDistance(a1, a2, b2));
