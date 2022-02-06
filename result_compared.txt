@@ -1,0 +1,36 @@
+Interval 2:
+t|obj_id
+0|309 with 251
+1|309 with 251
+2|309 with 251
+3|309 with 251
+3|463 with 346
+4|463 with 346
+5|463 with 346
+17|390 with 51
+18|390 with 51
+31|426 with 314
+
+Interval 5:
+t|obj_id
+0|309 with 251
+1|309 with 251
+2|309 with 251
+3|309 with 251
+4|309 with 251
+
+Interval 10:
+t|obj_id
+0|309 with 251
+1|309 with 251
+2|309 with 251
+3|309 with 251
+3|463 with 346
+4|309 with 251
+4|463 with 346
+5|309 with 251
+5|463 with 346
+6|309 with 251
+7|309 with 251
+8|309 with 251
+9|309 with 251

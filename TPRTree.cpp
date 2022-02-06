@@ -853,22 +853,16 @@ InsertedTrackInfo TPRTree::getTrackInfo(int id)
 	return InsertedTrackList[id];
 }
 
-void TPRTree::FindOverlapping(vector<pair<int, int> >& result, double queryTime)
+void TPRTree::FindOverlapping(vector<pair<int, int> >& result)
 {
+	if (m_root == nullptr)
+		return;
 	for (int j = 0; j < m_root->overlappingPairs.size(); j++) {
 		result.push_back(m_root->overlappingPairs[j]);
 	}
 	if (m_root->getLevel() > 0) {
-		/*if (m_root->m_HasOverlap) {
-			CEntry* m_entries = m_root->getEntry();
-			for (int j = 0; j < m_root->getNumEntrys(); j++) {
-				result.push_back(m_entries[j].m_id);
-			}
-		}
-	}
-	else {*/
 		for (int j = 0; j < m_root->getNumCntChild(); j++) {
-			m_root->m_childNode[j]->FindOverlappingRecursive(result, queryTime);
+			m_root->m_childNode[j]->FindOverlappingRecursive(result);
 		}
 	}
 	return;

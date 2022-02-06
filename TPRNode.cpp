@@ -560,7 +560,8 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-	
+	if (_InsertEntry.m_id == 251 || _InsertEntry.m_id == 309)
+		cout << "mam" << endl;
 	CheckOverlappingArea();
 	return true;
 }
@@ -1261,7 +1262,7 @@ void TPRNode::CheckOverlappingArea()
 	}
 }
 
-void TPRNode::FindOverlappingRecursive(vector< pair<int, int> >& result, double queryTime)
+void TPRNode::FindOverlappingRecursive(vector< pair<int, int> >& result)
 {
 	if (this == NULL)
 		return;
@@ -1270,7 +1271,7 @@ void TPRNode::FindOverlappingRecursive(vector< pair<int, int> >& result, double 
 	}
 	if (m_level > 0) {
 		for (int j = 0; j < m_NumCntChild; j++) {
-			m_childNode[j]->FindOverlappingRecursive(result, queryTime);
+			m_childNode[j]->FindOverlappingRecursive(result);
 		}
 	}
 }

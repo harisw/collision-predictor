@@ -22,9 +22,9 @@ using namespace std::chrono;
 #define VESSEL_FILENAME "vessel_499.csv"
 #define FILENAME "events_Approach - U Turn502.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 30		//GENERATED
+#define MAX_T 50		//GENERATED
 #define I 10
-#define SMALL_I 5
+//#define SMALL_I 5
 #define CALCULATE_INTERVAL 5
 #define SHOW_WARN 1
 //#define SHORT_EXP
@@ -164,57 +164,48 @@ void newHybridMethod() {
 		hybridResult.push_back({});
 		auto start = high_resolution_clock::now();
 		if (currentT % I == 0) {
+			//tree->Clear();
 			tree = new TPRTree();
+			
 			inputIDs.clear();
 			PredictUtil::trajectoryFilter(inputIDs, inputEvents[currentT], currentT);
 
-			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-				Event* ev = inputEvents[currentT][*inputItt];
-				tree->Insert(CEntry(*inputItt, 0, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
-					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0, inputEvents[currentT][*inputItt]->r));
-			}
+			//if (currentT >= 10) {
+				for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
+					Event* ev = inputEvents[currentT][*inputItt];
+					tree->Insert(CEntry(*inputItt, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
+						0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0, inputEvents[currentT][*inputItt]->r));
+				}
+				tempCandidates.clear();
+				tree->FindOverlapping(tempCandidates);
+			//}
 		}
-		if (currentT % SMALL_I == 0) {
+		//if (currentT % SMALL_I == 0) {
 			//tree->PrintAllEntry();
-			//return;
-			tempCandidates.clear();
-			tree->FindOverlapping(tempCandidates, (currentT%I) + SMALL_I);
-
-		}
+			//tempCandidates.clear();
+			//tree->FindOverlapping(tempCandidates);
+		//}
 
 		if (!tempCandidates.empty()) {
 			for(int j=0; j< tempCandidates.size(); j++){
-			//for (candidateItt = tempCandidates.begin(); candidateItt != tempCandidates.end() - 1; candidateItt++) {
-				/*if (inputEvents[currentT][*candidateItt]->isCollide)
-					continue;*/
-				//for (secondItt = tempCandidates.begin() + 1; secondItt != tempCandidates.end(); secondItt++) {
 				int firstVessel = tempCandidates[j].first;
 				int secVessel = tempCandidates[j].second;
-					double dist = Util::distance(inputEvents[currentT][firstVessel]->loc, inputEvents[currentT][secVessel]->loc);
+				if (currentT >=10 && (firstVessel == 251 || firstVessel == 309))
+					cout << "MAM" << endl;
 
+					double dist = Util::distance(inputEvents[currentT][firstVessel]->loc, inputEvents[currentT][secVessel]->loc);
 					double r = max(inputEvents[currentT][firstVessel]->r, inputEvents[currentT][secVessel]->r);
 #ifdef SHOW_WARN
 					if (dist <= r) {
+						if (currentT >= 10)
+							cout << "MAM" << endl;
 						hybridResult[currentT].push_back(make_pair(inputEvents[currentT][firstVessel]->id, inputEvents[currentT][secVessel]->id));
-						/*inputEvents[currentT][*candidateItt]->isCollide = true;
-						inputEvents[currentT][*secondItt]->isCollide = true;*/
 					}
 #endif // SHOW_WARN
 				//}
 			}
 		}
-//		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
-//			Vessel* currVessel = ourVessels[*vesselItt];
-//			for (objItt = tempCandidates.begin(); objItt != tempCandidates.end(); objItt++) {	//FOR OBJ
-//				double dist = Util::distance(currVessel->loc, inputEvents[currentT][*objItt]->loc);
-//				//double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
-//#ifdef SHOW_WARN
-//				if (dist <= currVessel->r)
-//					hybridResult[currentT].push_back(make_pair(*vesselItt, *objItt));
-//
-//#endif // SHOW_WARN
-//			}
-//		}
+
 #pragma region TIME_MEASUREMENT
 		auto stop = high_resolution_clock::now();
 		auto duration = duration_cast<microseconds>(stop - start);
@@ -233,7 +224,7 @@ void newHybridMethod() {
 #endif
 #pragma endregion
 		currentT++;
-		updateVesselLoc();
+		//updateVesselLoc();
 	}
 	cout << " Total duration " << total << endl;
 	ourVessels = buVessels;
@@ -245,12 +236,12 @@ int main()
 	Util::vesselFilename = VESSEL_FILENAME;
 	Util::maxT = MAX_T;
 	Util::interval = I;
-	Util::smInterval = SMALL_I;
+	//Util::smInterval = SMALL_I;
 	//Util::importVesselData(ourVessels, buVessels, numOfVessel);
 	Util::importObjData(inputEvents, numOfObj);
 
 
-	naiveMethod();
+	//naiveMethod();
 	//TPRMethod();
 	newHybridMethod();
 	//refineAISData();

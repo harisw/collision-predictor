@@ -278,9 +278,7 @@ public: // CSKIM
 	double getBufferRadius(double _maxR) {
 		return m_MaxBufferRadius;
 	}
-	void FindOverlappingRecursive(vector< pair<int, int> >& result, double queryTime);
-	//void RetrieveEntryRecursive(vector<CEntry*>& result);
-	//void RetrieveEntryRecursive(set<int>& result);
+	void FindOverlappingRecursive(vector< pair<int, int> >& result);
 	void CheckOverlappingArea();
 	bool m_HasOverlap = false;
 	/*vector<int> overlappingID;*/
