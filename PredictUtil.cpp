@@ -52,16 +52,9 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj,
 				inputObj[j]->predictLoc(Util::interval);
 
 
-			if (i == 190 && j == 312)
-				cout << "MAM" << endl;
+
 			double dist = Util::lineToLineDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc, *inputObj[j]->extLoc);
 			//double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
-			double distA = Util::lineToPointDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc);
-			double distB = Util::lineToPointDistance(inputObj[i]->loc, *inputObj[i]->extLoc, *inputObj[j]->extLoc);
-			
-			double distC = Util::lineToPointDistance(inputObj[j]->loc, *inputObj[j]->extLoc, inputObj[i]->loc);
-			double distD = Util::lineToPointDistance(inputObj[j]->loc, *inputObj[j]->extLoc, *inputObj[i]->extLoc);
-
 
 			double stretchedBufferRadius = max(inputObj[i]->r, inputObj[j]->r) * Util::interval;
 			if (dist <= stretchedBufferRadius) {

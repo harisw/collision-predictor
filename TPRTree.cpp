@@ -414,9 +414,6 @@ bool TPRTree::Insert(CEntry _input)
 		return false;
 	}
 
-	if (_input.m_id == 251 || _input.m_id == 309)
-		cout << "MAM" << endl;
-
 	m_status = NORMAL;
 	m_InputEntry.setID(-1);
 	double insertTime = _input.getTime();// time(NULL);
@@ -856,10 +853,10 @@ InsertedTrackInfo TPRTree::getTrackInfo(int id)
 	return InsertedTrackList[id];
 }
 
-void TPRTree::FindOverlapping(vector<int>& result, double queryTime)
+void TPRTree::FindOverlapping(vector<pair<int, int> >& result, double queryTime)
 {
-	for (int j = 0; j < m_root->overlappingID.size(); j++) {
-		result.push_back(m_root->overlappingID[j]);
+	for (int j = 0; j < m_root->overlappingPairs.size(); j++) {
+		result.push_back(m_root->overlappingPairs[j]);
 	}
 	if (m_root->getLevel() > 0) {
 		/*if (m_root->m_HasOverlap) {

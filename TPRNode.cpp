@@ -560,8 +560,6 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-	if (_InsertEntry.m_id == 251 || _InsertEntry.m_id == 309)
-		cout << _InsertEntry.m_id << " on " << this->m_ID << " Node" << endl;
 	
 	CheckOverlappingArea();
 	return true;
@@ -1247,31 +1245,28 @@ void TPRNode::CheckOverlappingArea()
 	//double targetMBR[4];
 	for (int j = 0; j < m_NumCntEntries - 1; j++) {
 		//targetMBR = m_entry[j].m_MBR;
-		if (newInsertedID == 309 && m_entry[j].m_id == 251)
-			cout << "MTHER " << m_entry[lastIndex].m_MBR[0] << " " << m_entry[lastIndex].m_MBR[3] << " " << m_entry[j].m_MBR[0] << " " << m_entry[j].m_MBR[3] << endl;
-
 		if (!(m_entry[lastIndex].m_MBR[0] > m_entry[j].m_MBR[2] || m_entry[lastIndex].m_MBR[2] < m_entry[j].m_MBR[0] || 
 			m_entry[lastIndex].m_MBR[3] < m_entry[j].m_MBR[1] || m_entry[lastIndex].m_MBR[1] > m_entry[j].m_MBR[3])) {
-			cout << "overlap : " << m_entry[lastIndex].m_id << " with " << m_entry[j].m_id << endl;
-
-			if (!m_entry[lastIndex].m_IsCandidate) {
+		
+			overlappingPairs.push_back(make_pair(m_entry[lastIndex].m_id, m_entry[j].m_id));
+			/*if (!m_entry[lastIndex].m_IsCandidate) {
 				overlappingID.push_back(m_entry[lastIndex].m_id);
 				m_entry[lastIndex].m_IsCandidate = true;
 			}
 			if (!m_entry[j].m_IsCandidate) {
 				overlappingID.push_back(m_entry[j].m_id);
 				m_entry[j].m_IsCandidate = true;
-			}
+			}*/
 		}
 	}
 }
 
-void TPRNode::FindOverlappingRecursive(vector<int>& result, double queryTime)
+void TPRNode::FindOverlappingRecursive(vector< pair<int, int> >& result, double queryTime)
 {
 	if (this == NULL)
 		return;
-	for (int j = 0; j < overlappingID.size(); j++) {
-		result.push_back(overlappingID[j]);
+	for (int j = 0; j < overlappingPairs.size(); j++) {
+		result.push_back(overlappingPairs[j]);
 	}
 	if (m_level > 0) {
 		for (int j = 0; j < m_NumCntChild; j++) {
