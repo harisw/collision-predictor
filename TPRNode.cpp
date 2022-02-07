@@ -560,8 +560,8 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-	if (_InsertEntry.m_id == 251 || _InsertEntry.m_id == 309)
-		cout << "mam" << endl;
+	//if (_InsertEntry.m_id == 251 || _InsertEntry.m_id == 309)
+	//	cout << "mam" << endl;
 	CheckOverlappingArea();
 	return true;
 }

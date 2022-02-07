@@ -7,10 +7,10 @@
 
 #include "ICMSCalculator.h"
 #include "time.h"
+#include "Util.h"
 #include <stdio.h>
 #include <algorithm>
 using namespace std;
-#define HORIZON 10
 struct CPosition
 {
 	double x;				//경도 위치
@@ -39,8 +39,8 @@ public:
 		m_time = _time;
 		m_BufferRadius = _radius;
 		
-		double dest_x = m_x + HORIZON * m_vx;
-		double dest_y = m_y + HORIZON * m_vy;
+		double dest_x = m_x + Util::interval * m_vx;
+		double dest_y = m_y + Util::interval * m_vy;
 
 		m_MBR[0] = min(m_x, dest_x) - _radius;
 		m_MBR[1] = min(m_y, dest_y) - _radius;
