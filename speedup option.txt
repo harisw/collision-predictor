@@ -1,0 +1,9 @@
+speedup option
+top down :
+
+- Result storage must be unique, set is too slow??
+- reduce iteration, now m*n, how? 
+	cuz we need to check every combination. If we stop immediately after knowing an overlap, there could be another candidate left unchecked.
+
+bottom up :
+- how to get all leaf node? I have array of entries pointing to their node

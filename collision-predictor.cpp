@@ -164,13 +164,25 @@ void newHybridMethod() {
 			
 			inputIDs.clear();
 			PredictUtil::trajectoryFilter(inputIDs, inputEvents[currentT], currentT);
+			
+			//auto t = high_resolution_clock::now();
+			start = high_resolution_clock::now();
+
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
 				tree->Insert(CEntry(*inputItt, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
 					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0, inputEvents[currentT][*inputItt]->r));
 			}
 			tempCandidates.clear();
+			/*auto tE = high_resolution_clock::now();
+			auto durE = duration_cast<microseconds>(tE - t);
+			cout << "Updating time: " << durE.count() << endl << endl;
+
+			auto t1 = high_resolution_clock::now();*/
 			tree->FindOverlapping(tempCandidates);
+			/*auto t2 = high_resolution_clock::now();
+			auto dur = duration_cast<microseconds>(t2 - t1);
+			cout << "findingOverlap time: " << dur.count() <<endl <<endl;*/
 		}
 
 		if (!tempCandidates.empty()) {

@@ -1,5 +1,8 @@
 #include <math.h>
 #include <algorithm>
+#include <chrono>
+using namespace std;
+using namespace std::chrono; 
 #include "PredictUtil.h"
 #include "EventPtr.h"
 #include "Util.h"
@@ -38,7 +41,7 @@ void cleanVect(vector<Vessel*>& input) {
 
 void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj, int currTime)
 {
-
+	//auto t1 = high_resolution_clock::now();
 	for (int i = 0; i < inputObj.size()-1; i++) {
 		if (inputObj[i]->isCandidate)
 			continue;
@@ -51,8 +54,6 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj,
 			if(inputObj[j]->extLoc == nullptr)
 				inputObj[j]->predictLoc(Util::interval);
 
-
-
 			double dist = Util::lineToLineDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc, *inputObj[j]->extLoc);
 			//double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
 
@@ -60,11 +61,14 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj,
 			if (dist <= stretchedBufferRadius) {
 				inputIDs.insert(inputObj[i]->id);
 				inputIDs.insert(inputObj[j]->id);
-				inputObj[i]->isCandidate = true;
 				inputObj[j]->isCandidate = true;
 				break;
 			}
 		}
 	}
+	/*auto t2 = high_resolution_clock::now();
+	auto dur = duration_cast<microseconds>(t2 - t1);
+	cout << "Filtering time: " << dur.count() << endl << endl;*/
+
 	return;
 }
