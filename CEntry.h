@@ -46,6 +46,8 @@ public:
 		m_MBR[1] = min(m_y, dest_y) - _radius;
 		m_MBR[2] = max(m_x, dest_x) + -_radius;
 		m_MBR[3] = max(m_y, dest_y) + -_radius;
+
+
 	}
 
 	CEntry* getEntry() {

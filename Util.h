@@ -4,7 +4,7 @@
 
 using namespace std;
 class Point;
-class Event;
+class EventPtr;
 class Vessel;
 class Util
 {
@@ -19,7 +19,7 @@ public:
 	static double lineToLineDistance(Point a1, Point a2, Point b1, Point b2);
 	static void importVesselData(vector<Vessel*>& input, vector<Vessel*>& input2, 
 		int& vesselNum);
-	static void importObjData(vector<vector<Event*>>& input, int& objNum);
+	static void importObjData(vector<vector<EventPtr*>>& input, int& objNum);
 	static void exportResult(vector< vector<pair<int,int> > >& naiveResult, vector<vector<pair<int, int> > >& TPRResult,
 		vector<vector<pair<int, int> > >& hybridResult);
 	//static double lineToLineDistance(pair<Point, Point> a, pair<Point, Point> b);

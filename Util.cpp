@@ -48,7 +48,7 @@ void Util::importVesselData(vector<Vessel*>& input, vector<Vessel*>& buInput, in
 	if (newfile.is_open()) {   //checking whether the file is open
 		string tp;
 		string token, vx, vy, x, y, r;
-		vector< vector<Event*> > collectedEvents = {};
+		vector< vector<EventPtr*> > collectedEvents = {};
 		collectedEvents.push_back({});
 		while (getline(newfile, tp)) { //read data from file object and put it into string.
 			istringstream tokenizer(tp);
@@ -76,7 +76,7 @@ void Util::importVesselData(vector<Vessel*>& input, vector<Vessel*>& buInput, in
 	}
 }
 
-void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
+void Util::importObjData(vector< vector<EventPtr*> >& input, int& objNum)
 {
 	string filename(objFilename);
 	fstream newfile;
@@ -113,7 +113,7 @@ void Util::importObjData(vector< vector<Event*> >& input, int& objNum)
 
 			getline(tokenizer, token, '|');
 			r = stod(token);
-			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y), r);
+			EventPtr* currentEv = new EventPtr(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y), r);
 			input[global_itt].push_back(currentEv);
 		}
 		objNum = obj_id;

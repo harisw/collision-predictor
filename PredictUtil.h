@@ -4,12 +4,12 @@
 using namespace std;
 
 class Vessel;
-class Event;
+class EventPtr;
 class TPRTree;
 class PredictUtil
 {
 public:
 	static vector<Vessel*> predictBufferZones(vector<Vessel*>& inputVessel);
 	//static void trajectoryFilter(vector<Event*>& inputObj, TPRTree& indexTree);
-	static void trajectoryFilter(set<int>& inputIDs, vector<Event*>& inputObj, int _time);
+	static void trajectoryFilter(set<int>& inputIDs, vector<EventPtr*>& inputObj, int _time);
 };

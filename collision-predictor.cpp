@@ -19,16 +19,15 @@ using namespace std::chrono;
 #include "TPRTree.h"
 #include "PredictUtil.h"
 #include "Util.h"
-//#define VESSEL_FILENAME "vessel_499.csv"
-#define FILENAME "events_Approach - U Turn502.txt"
+#define FILENAME "sc3 - Stop50000.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 50		//GENERATED
-#define I 10
+#define MAX_T 35		//GENERATED
+#define I 5
 //#define SMALL_I 5
-#define CALCULATE_INTERVAL 5
+#define CALCULATE_INTERVAL 10
 #define SHOW_WARN 1
 //#define SHORT_EXP
-vector< vector<Event*> > inputEvents;
+vector< vector<EventPtr*> > inputEvents;
 vector<Vessel*> ourVessels;
 
 vector<Vessel*> buVessels;
@@ -106,7 +105,7 @@ void TPRMethod() {
 //			tree = new TPRTree();
 //			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], currentT);
 //			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-//				Event* ev = inputEvents[currentT][*inputItt];
+//				EventPtr* ev = inputEvents[currentT][*inputItt];
 //				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
 //					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
 //			}
@@ -166,10 +165,10 @@ void newHybridMethod() {
 			PredictUtil::trajectoryFilter(inputIDs, inputEvents[currentT], currentT);
 			
 			//auto t = high_resolution_clock::now();
-			start = high_resolution_clock::now();
+			//start = high_resolution_clock::now();
 
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-				Event* ev = inputEvents[currentT][*inputItt];
+				EventPtr* ev = inputEvents[currentT][*inputItt];
 				tree->Insert(CEntry(*inputItt, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
 					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0, inputEvents[currentT][*inputItt]->r));
 			}
@@ -231,14 +230,10 @@ int main()
 	//Util::vesselFilename = VESSEL_FILENAME;
 	Util::maxT = MAX_T;
 	Util::interval = I;
-	//Util::smInterval = SMALL_I;
-	//Util::importVesselData(ourVessels, buVessels, numOfVessel);
 	Util::importObjData(inputEvents, numOfObj);
 
-
-	//naiveMethod();
-	//TPRMethod();
 	newHybridMethod();
+	naiveMethod();
 	//refineAISData();
 	Util::exportResult(naiveResult, TPRResult, hybridResult);
 }
@@ -250,7 +245,7 @@ void refineAISData()
 	string filename("events_AIS.csv");
 	fstream newfile;
 	newfile.open(filename, ios::in); //open a file to perform read operation using file object
-	vector< vector<Event*> > collectedEvents = {};
+	vector< vector<EventPtr*> > collectedEvents = {};
 	int objMax = 120;
 	if (newfile.is_open()) {   //checking whether the file is open
 		string tp;
@@ -266,7 +261,7 @@ void refineAISData()
 		int collective_itt = 0;
 		bool first = true;
 		bool boolID[380] = { 0 };
-		Event* defaultEv = nullptr;
+		EventPtr* defaultEv = nullptr;
 		getline(newfile, tp);		//skip header
 		while (getline(newfile, tp)) { //read data from file object and put it into string.
 			istringstream tokenizer(tp);
@@ -277,13 +272,13 @@ void refineAISData()
 				for (int j = 0; j < objMax; j++) {
 					if (collectedEvents[global_itt][j] == nullptr) {
 						if (global_itt == 0) {
-							Event* currentEv = new Event(global_itt, j, defaultEv->vx, defaultEv->vy,
+							EventPtr* currentEv = new EventPtr(global_itt, j, defaultEv->vx, defaultEv->vy,
 								defaultEv->loc.x + defaultEv->vx, defaultEv->loc.y + defaultEv->vy);
 							collectedEvents[global_itt][j] = currentEv;
 						}
 						else {
-							Event* prevEv = collectedEvents[global_itt - 1][j];
-							Event* currentEv = new Event(global_itt, j, prevEv->vx, prevEv->vy,
+							EventPtr* prevEv = collectedEvents[global_itt - 1][j];
+							EventPtr* currentEv = new EventPtr(global_itt, j, prevEv->vx, prevEv->vy,
 								prevEv->loc.x + prevEv->vx, prevEv->loc.y + prevEv->vy);
 							collectedEvents[global_itt][j] = currentEv;
 						}
@@ -310,7 +305,7 @@ void refineAISData()
 
 			getline(tokenizer, r, '|');
 
-			Event* currentEv = new Event(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y), stod(r));
+			EventPtr* currentEv = new EventPtr(global_itt, obj_id, stod(vx), stod(vy), stod(x), stod(y), stod(r));
 			collectedEvents[global_itt][obj_id] = currentEv;
 			if (global_itt == 0)
 				defaultEv = currentEv;

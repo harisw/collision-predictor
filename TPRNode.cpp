@@ -1221,43 +1221,16 @@ void TPRNode::freeEntryMemory()
 
 }
 
-//void TPRNode::RetrieveEntryRecursive(vector<CEntry*>& result)
-//{
-//	if (m_level == 0) {
-//		if (!result.empty() && m_entry[0].m_id == result[0]->m_id)
-//			return;
-//		for (int j = 0; j < m_NumCntEntries; j++) {
-//			result.push_back(&m_entry[j]);
-//		}
-//		return;
-//	}
-//	else {
-//		for (int j = 0; j < m_NumCntChild; j++)
-//			m_childNode[j]->RetrieveEntryRecursive(result);
-//	}
-//}
-
 void TPRNode::CheckOverlappingArea()
 {
 	//check only last inserted entry against another
 	int lastIndex = m_NumCntEntries - 1;
-	//double myMBR[4] = m_entry[lastIndex].m_MBR;
 	int newInsertedID = m_entry[lastIndex].m_id;
-	//double targetMBR[4];
 	for (int j = 0; j < m_NumCntEntries - 1; j++) {
-		//targetMBR = m_entry[j].m_MBR;
 		if (!(m_entry[lastIndex].m_MBR[0] > m_entry[j].m_MBR[2] || m_entry[lastIndex].m_MBR[2] < m_entry[j].m_MBR[0] || 
 			m_entry[lastIndex].m_MBR[3] < m_entry[j].m_MBR[1] || m_entry[lastIndex].m_MBR[1] > m_entry[j].m_MBR[3])) {
 		
 			overlappingPairs.push_back(make_pair(m_entry[lastIndex].m_id, m_entry[j].m_id));
-			/*if (!m_entry[lastIndex].m_IsCandidate) {
-				overlappingID.push_back(m_entry[lastIndex].m_id);
-				m_entry[lastIndex].m_IsCandidate = true;
-			}
-			if (!m_entry[j].m_IsCandidate) {
-				overlappingID.push_back(m_entry[j].m_id);
-				m_entry[j].m_IsCandidate = true;
-			}*/
 		}
 	}
 }

@@ -16,11 +16,11 @@ void Vessel::predictLoc(int futureT) {
 	loc = newP;
 }
 
-Event::Event()
+EventPtr::EventPtr()
 {
 }
 
-Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r)
+EventPtr::EventPtr(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r)
 {
 	t = _t;
 	id = _id;
@@ -31,6 +31,14 @@ Event::Event(int _t, int _id, double _vx, double _vy, double _x, double _y, doub
 	r = _r;
 }
 
-void Event::predictLoc(int futureT) {
+void EventPtr::predictLoc(int futureT) {
 	extLoc = new Point(loc.x + ((double)futureT * vx), loc.y + ((double)futureT * vy));
+	if (loc.x < extLoc->x) {
+		left = loc;
+		right = *extLoc;
+	}
+	else {
+		left = *extLoc;
+		right = loc;
+	}
 }

@@ -29,7 +29,7 @@ public:
 	void predictLoc(int futureT);
 };
 
-class Event
+class EventPtr
 {
 public:
 	int t;
@@ -39,10 +39,12 @@ public:
 	double r;
 	Point loc;
 	Point* extLoc;
+	Point left;
+	Point right;
 	bool filtered = false;
 	bool isCandidate = false;
 	bool isCollide = false;
-	Event();
-	Event(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r = 0);
+	EventPtr();
+	EventPtr(int _t, int _id, double _vx, double _vy, double _x, double _y, double _r = 0);
 	void predictLoc(int futureT);
 };
