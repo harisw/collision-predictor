@@ -36,7 +36,7 @@ void cleanVect(vector<Vessel*>& input) {
 	input = res;
 }
 
-void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, int currTime, TPRTree* const &vesselTree)
+void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVessel, vector<Event*>& inputObj, int currTime)
 {
 	vector<bool> vesselCandidates;
 	vesselCandidates.insert(vesselCandidates.end(), inputVessel.size(), false);
@@ -55,13 +55,6 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<Vessel*>& inputVes
 				vesselCandidates[j] = true;
 				break;
 			}
-		}
-	}
-
-	if (vesselTree != 0) {
-		for (int j = 0; j < vesselCandidates.size(); j++) {
-			if (vesselCandidates[j])
-				vesselTree->Insert(CEntry(inputVessel[j]->id, 0, inputVessel[j]->loc.x, inputVessel[j]->loc.y, 0.0, inputVessel[j]->vx, inputVessel[j]->vy, 0.0, inputVessel[j]->r));
 		}
 	}
 }

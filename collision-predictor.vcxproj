@@ -24,6 +24,7 @@
     <ProjectGuid>{1af24177-2d81-4c50-93b9-8b52d113a2a5}</ProjectGuid>
     <RootNamespace>collisionpredictor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>collision-predictor branch TPR</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

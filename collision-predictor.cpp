@@ -19,13 +19,13 @@ using namespace std::chrono;
 #include "TPRTree.h"
 #include "PredictUtil.h"
 #include "Util.h"
-#define VESSEL_FILENAME "vessel_499.csv"
-#define FILENAME "events_Approach - Bypass1000.txt"
+#define VESSEL_FILENAME "vessel_Stop502 UNBALAN.csv"
+#define FILENAME "obj_Stop502 UNBALAN.csv"
 #define START_T 0		//GENERATED
-#define MAX_T 30		//GENERATED
-#define I 10
-#define SMALL_I 5
-#define CALCULATE_INTERVAL 5
+#define MAX_T 100		//GENERATED
+#define I 5
+//#define SMALL_I 5
+#define CALCULATE_INTERVAL 10
 #define SHOW_WARN 1
 //#define SHORT_EXP
 vector< vector<Event*> > inputEvents;
@@ -107,6 +107,8 @@ void TPRMethod() {
 		if (currentT % I == 0) {
 			tree = new TPRTree();
 			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], currentT);
+			//auto start = high_resolution_clock::now();
+
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				Event* ev = inputEvents[currentT][*inputItt];
 				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
@@ -146,95 +148,19 @@ void TPRMethod() {
 	ourVessels = buVessels;
 }
 
-void newHybridMethod() {
-	cout << endl << "Hybrid" << endl;
-	int currentT = START_T;
-	int maxT = MAX_T;
-	set<int> inputIDs;
-	set<int>::iterator inputItt;
-	vector< vector<int> > candidateIDs;
-	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
-	TPRTree* tree = nullptr;
-	TPRTree* vesselTree = nullptr;
-	unsigned long curDuration = 0;
-	unsigned long total = 0;
-	set<int> tempCandidates;
-	set<int> overlappingVessel;
-	set<int>::iterator objItt, vesselItt;
-	while (currentT < maxT) {
-		hybridResult.push_back({});
-		auto start = high_resolution_clock::now();
-		if (currentT % I == 0) {
-			tree = new TPRTree();
-			vesselTree = new TPRTree();
-			inputIDs.clear();
-			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], currentT, vesselTree);
-
-			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-				Event* ev = inputEvents[currentT][*inputItt];
-				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, 0, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
-					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
-			}
-		}
-		if (currentT % SMALL_I == 0) {
-			//vesselTree->PrintAllEntry();
-			tree->PrintAllEntry();
-			tempCandidates.clear();
-			overlappingVessel.clear();
-			vesselTree->FindOverlapping(tempCandidates, overlappingVessel, tree, (currentT%I) + SMALL_I);
-
-		}
-
-		for (vesselItt = overlappingVessel.begin(); vesselItt != overlappingVessel.end(); vesselItt++) {	//FOR VESS
-			Vessel* currVessel = ourVessels[*vesselItt];
-			for (objItt = tempCandidates.begin(); objItt != tempCandidates.end(); objItt++) {	//FOR OBJ
-				double dist = Util::distance(currVessel->loc, inputEvents[currentT][*objItt]->loc);
-				//double dist = Util::distance(ourVessels[j]->loc, inputEvents[currentT][candidateIDs[j][k]]->loc);
-#ifdef SHOW_WARN
-				if (dist <= currVessel->r)
-					hybridResult[currentT].push_back(make_pair(*vesselItt, *objItt));
-
-#endif // SHOW_WARN
-			}
-		}
-#pragma region TIME_MEASUREMENT
-		auto stop = high_resolution_clock::now();
-		auto duration = duration_cast<microseconds>(stop - start);
-		curDuration += duration.count();
-#ifdef SHORT_EXP
-		total += curDuration;
-		cout << "#" << currentT << " Time taken by cycle " << currentT << ":  " << curDuration << endl;
-		curDuration = 0;
-#endif // SHORT_EXP
-#ifndef SHORT_EXP
-		if (currentT > 0 && currentT % CALCULATE_INTERVAL == 0) {
-			total += (curDuration / CALCULATE_INTERVAL);
-			cout << "#" << currentT << " Time taken by cycle " << currentT / CALCULATE_INTERVAL << ":  " << curDuration / CALCULATE_INTERVAL << endl;
-			curDuration = 0;
-		}
-#endif
-#pragma endregion
-		currentT++;
-		updateVesselLoc();
-	}
-	cout << " Total duration " << total << endl;
-	ourVessels = buVessels;
-}
-
 int main()
 {
 	Util::objFilename = FILENAME;
 	Util::vesselFilename = VESSEL_FILENAME;
 	Util::maxT = MAX_T;
 	Util::interval = I;
-	Util::smInterval = SMALL_I;
+	//Util::smInterval = SMALL_I;
 	Util::importVesselData(ourVessels, buVessels, numOfVessel);
 	Util::importObjData(inputEvents, numOfObj);
 
 
-	/*naiveMethod();
-	TPRMethod();*/
-	newHybridMethod();
+	naiveMethod();
+	TPRMethod();
 	//refineAISData();
 	Util::exportResult(naiveResult, TPRResult, hybridResult);
 }
