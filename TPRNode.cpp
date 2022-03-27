@@ -560,9 +560,16 @@ int TPRNode::getNumEntrys()
 bool TPRNode::Insert(CEntry _InsertEntry)
 {
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
-	//if (_InsertEntry.m_id == 251 || _InsertEntry.m_id == 309)
-	//	cout << "mam" << endl;
-	CheckOverlappingArea();
+	
+	int lastIndex = m_NumCntEntries - 1;
+	int newInsertedID = m_entry[lastIndex].m_id;
+	for (int j = 0; j < m_NumCntEntries - 1; j++) {
+		if (!(m_entry[lastIndex].m_MBR[0] > m_entry[j].m_MBR[2] || m_entry[lastIndex].m_MBR[2] < m_entry[j].m_MBR[0] ||
+			m_entry[lastIndex].m_MBR[3] < m_entry[j].m_MBR[1] || m_entry[lastIndex].m_MBR[1] > m_entry[j].m_MBR[3])) {
+
+			overlappingPairs.push_back(make_pair(m_entry[lastIndex].m_id, m_entry[j].m_id));
+		}
+	}
 	return true;
 }
 
@@ -1223,16 +1230,7 @@ void TPRNode::freeEntryMemory()
 
 void TPRNode::CheckOverlappingArea()
 {
-	//check only last inserted entry against another
-	int lastIndex = m_NumCntEntries - 1;
-	int newInsertedID = m_entry[lastIndex].m_id;
-	for (int j = 0; j < m_NumCntEntries - 1; j++) {
-		if (!(m_entry[lastIndex].m_MBR[0] > m_entry[j].m_MBR[2] || m_entry[lastIndex].m_MBR[2] < m_entry[j].m_MBR[0] || 
-			m_entry[lastIndex].m_MBR[3] < m_entry[j].m_MBR[1] || m_entry[lastIndex].m_MBR[1] > m_entry[j].m_MBR[3])) {
-		
-			overlappingPairs.push_back(make_pair(m_entry[lastIndex].m_id, m_entry[j].m_id));
-		}
-	}
+
 }
 
 void TPRNode::FindOverlappingRecursive(vector< pair<int, int> >& result)

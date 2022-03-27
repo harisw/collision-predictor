@@ -253,7 +253,7 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<EventPtr*>& inputO
 			double dist = Util::lineToLineDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc, *inputObj[j]->extLoc);
 			//double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
 
-			double stretchedBufferRadius = max(inputObj[i]->r, inputObj[j]->r) * Util::interval;
+			double stretchedBufferRadius = max(inputObj[i]->r, inputObj[j]->r);
 			if (dist <= stretchedBufferRadius) {
 				inputIDs.insert(inputObj[i]->id);
 				inputIDs.insert(inputObj[j]->id);
