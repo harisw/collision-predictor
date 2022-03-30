@@ -34,13 +34,8 @@
 #include <algorithm>
 #include <fstream>
 #include <set>
-#include "Miniball.hpp"
 
 using namespace std;
-
-typedef double* const* PointIterator;
-typedef const double* CoordIterator;
-typedef Miniball::Miniball <Miniball::CoordAccessor<PointIterator, CoordIterator> > MB;
 
 struct indexXY { // 엔트리의 변수정보와 index정보를 갖고있음, 정렬 및 split에 활용
 	int id;

@@ -13,7 +13,6 @@
 #include <iterator>
 using namespace std;
 using namespace std::chrono;
-#include "Miniball.hpp"
 #include "EventPtr.h"
 #include "CEntry.h"
 #include "TPRTree.h"
