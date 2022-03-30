@@ -233,11 +233,8 @@ void cleanVect(vector<Vessel*>& input) {
 	input = res;
 }
 
-void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<EventPtr*>& inputObj, int currTime)
+void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<EventPtr*>& inputObj)
 {
-   /* isIntersect(inputIDs, inputObj, currTime);
-    return;*/
-	//auto t1 = high_resolution_clock::now();
 	for (int i = 0; i < inputObj.size()-1; i++) {
 		if (inputObj[i]->isCandidate)
 			continue;
@@ -251,10 +248,9 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<EventPtr*>& inputO
 				inputObj[j]->predictLoc(Util::interval);
 
 			double dist = Util::lineToLineDistance(inputObj[i]->loc, *inputObj[i]->extLoc, inputObj[j]->loc, *inputObj[j]->extLoc);
-			//double dist = Util::lineToPointDistance(a, b, inputVessel[j]->loc);
 
-			double stretchedBufferRadius = max(inputObj[i]->r, inputObj[j]->r);
-			if (dist <= stretchedBufferRadius) {
+			double maxRadius = max(inputObj[i]->r, inputObj[j]->r);
+			if (dist <= maxRadius) {
 				inputIDs.insert(inputObj[i]->id);
 				inputIDs.insert(inputObj[j]->id);
 				inputObj[j]->isCandidate = true;
@@ -262,9 +258,5 @@ void PredictUtil::trajectoryFilter(set<int>& inputIDs, vector<EventPtr*>& inputO
 			}
 		}
 	}
-	/*auto t2 = high_resolution_clock::now();
-	auto dur = duration_cast<microseconds>(t2 - t1);
-	cout << "Filtering time: " << dur.count() << endl << endl;*/
-
 	return;
 }

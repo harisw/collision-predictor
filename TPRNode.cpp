@@ -562,7 +562,6 @@ bool TPRNode::Insert(CEntry _InsertEntry)
 	memcpy(&m_entry[m_NumCntEntries++], &_InsertEntry, sizeof(_InsertEntry));
 	
 	int lastIndex = m_NumCntEntries - 1;
-	int newInsertedID = m_entry[lastIndex].m_id;
 	for (int j = 0; j < m_NumCntEntries - 1; j++) {
 		if (!(m_entry[lastIndex].m_MBR[0] > m_entry[j].m_MBR[2] || m_entry[lastIndex].m_MBR[2] < m_entry[j].m_MBR[0] ||
 			m_entry[lastIndex].m_MBR[3] < m_entry[j].m_MBR[1] || m_entry[lastIndex].m_MBR[1] > m_entry[j].m_MBR[3])) {

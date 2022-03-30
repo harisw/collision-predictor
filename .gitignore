@@ -401,3 +401,4 @@ events_*0000.txt
 datagen and preprocess/*.csv
 datagen and preprocess/*.txt
 sc*.txt
+*_result.csv

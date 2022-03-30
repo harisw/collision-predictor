@@ -21,7 +21,7 @@ using namespace std::chrono;
 #include "Util.h"
 #define FILENAME "sc3 - Stop50000.txt"
 #define START_T 0		//GENERATED
-#define MAX_T 35		//GENERATED
+#define MAX_T 20		//GENERATED
 #define I 5
 //#define SMALL_I 5
 #define CALCULATE_INTERVAL 10
@@ -35,7 +35,7 @@ int numOfObj;
 int numOfVessel;
 
 vector< vector<pair<int, int> > > naiveResult;	//t * collisionIDs
-vector< vector<pair<int, int> > > TPRResult;
+vector< vector<pair<int, int> > > treeOnlyResult;
 vector< vector<pair<int, int> > > hybridResult;
 
 void refineAISData();
@@ -87,40 +87,50 @@ void naiveMethod() {
 	}
 	cout << " Total duration " << total << endl;
 }
-void TPRMethod() {
-	cout << endl << "TPR Only" << endl;
-	int currentT = 0;
-	int maxT = MAX_T;
-	set<int> inputIDs;
-	set<int>::iterator inputItt;
-	vector< vector<int> > candidateIDs;
-	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
-	TPRTree* tree = nullptr;
-	unsigned long curDuration = 0;
-	unsigned long total = 0;
+
+//void treeOnlyMethod() {
+//	cout << endl << "Tree only" << endl;
+//	int currentT = START_T;
+//	int maxT = MAX_T;
+//	set<int> inputIDs;
+//	set<int>::iterator inputItt;
+//	vector< vector<int> > candidateIDs;
+//	candidateIDs.insert(candidateIDs.end(), ourVessels.size(), {});
+//	TPRTree* tree = nullptr;
+//	unsigned long curDuration = 0;
+//	unsigned long total = 0;
+//	vector< pair<int, int> > tempCandidates;
 //	while (currentT < maxT) {
-//		TPRResult.push_back({});
+//		hybridResult.push_back({});
 //		auto start = high_resolution_clock::now();
 //		if (currentT % I == 0) {
 //			tree = new TPRTree();
-//			PredictUtil::trajectoryFilter(inputIDs, ourVessels, inputEvents[currentT], currentT);
+//
+//			inputIDs.clear();
+//			PredictUtil::trajectoryFilter(inputIDs, inputEvents[currentT]);
 //			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
-//				EventPtr* ev = inputEvents[currentT][*inputItt];
-//				tree->Insert(CEntry(inputEvents[currentT][*inputItt]->id, currentT, inputEvents[currentT][*inputItt]->loc.x, inputEvents[currentT][*inputItt]->loc.y,
-//					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0));
+//				tree->Insert(CEntry(inputItt, currentT, inputEvents[currentT][j]->loc.x, inputEvents[currentT][j]->loc.y,
+//					0.0, inputEvents[currentT][j]->vx, inputEvents[currentT][j]->vy, 0.0, inputEvents[currentT][j]->r));
 //			}
+//			tempCandidates.clear();
+//			tree->FindOverlapping(tempCandidates);
 //		}
 //
-//		for (int j = 0; j < ourVessels.size(); j++) {
-//			vector<CEntry> tempCandidates;
-//			Vessel* currArea = ourVessels[j];
-//			tree->rangeQueryKNN4(currArea->loc.x, currArea->loc.y, 0.0, currArea->r, tempCandidates, currentT % I);
-//			for (int k = 0; k < tempCandidates.size(); k++) {
+//		if (!tempCandidates.empty()) {
+//			for (int j = 0; j < tempCandidates.size(); j++) {
+//				int firstVessel = tempCandidates[j].first;
+//				int secVessel = tempCandidates[j].second;
+//				double dist = Util::distance(inputEvents[currentT][firstVessel]->loc, inputEvents[currentT][secVessel]->loc);
+//				double r = max(inputEvents[currentT][firstVessel]->r, inputEvents[currentT][secVessel]->r);
 //#ifdef SHOW_WARN
-//				TPRResult[currentT].push_back(make_pair(j, inputEvents[currentT][j]->id));
+//				if (dist <= r) {
+//					treeOnlyResult[currentT].push_back(make_pair(inputEvents[currentT][firstVessel]->id, inputEvents[currentT][secVessel]->id));
+//				}
 //#endif // SHOW_WARN
 //			}
-//		}
+//				}
+//
+//#pragma region TIME_MEASUREMENT
 //		auto stop = high_resolution_clock::now();
 //		auto duration = duration_cast<microseconds>(stop - start);
 //		curDuration += duration.count();
@@ -136,12 +146,12 @@ void TPRMethod() {
 //			curDuration = 0;
 //		}
 //#endif
+//#pragma endregion
 //		currentT++;
-//		updateVesselLoc();
-//	}
+//			}
 //	cout << " Total duration " << total << endl;
 //	ourVessels = buVessels;
-}
+//		}
 
 void newHybridMethod() {
 	cout << endl << "Hybrid" << endl;
@@ -162,10 +172,7 @@ void newHybridMethod() {
 			tree = new TPRTree();
 			
 			inputIDs.clear();
-			PredictUtil::trajectoryFilter(inputIDs, inputEvents[currentT], currentT);
-			
-			//auto t = high_resolution_clock::now();
-			//start = high_resolution_clock::now();
+			PredictUtil::trajectoryFilter(inputIDs, inputEvents[currentT]);
 
 			for (inputItt = inputIDs.begin(); inputItt != inputIDs.end(); inputItt++) {
 				EventPtr* ev = inputEvents[currentT][*inputItt];
@@ -173,30 +180,20 @@ void newHybridMethod() {
 					0.0, inputEvents[currentT][*inputItt]->vx, inputEvents[currentT][*inputItt]->vy, 0.0, inputEvents[currentT][*inputItt]->r));
 			}
 			tempCandidates.clear();
-			/*auto tE = high_resolution_clock::now();
-			auto durE = duration_cast<microseconds>(tE - t);
-			cout << "Updating time: " << durE.count() << endl << endl;
-
-			auto t1 = high_resolution_clock::now();*/
 			tree->FindOverlapping(tempCandidates);
-			/*auto t2 = high_resolution_clock::now();
-			auto dur = duration_cast<microseconds>(t2 - t1);
-			cout << "findingOverlap time: " << dur.count() <<endl <<endl;*/
 		}
 
 		if (!tempCandidates.empty()) {
 			for(int j=0; j< tempCandidates.size(); j++){
 				int firstVessel = tempCandidates[j].first;
 				int secVessel = tempCandidates[j].second;
-
-					double dist = Util::distance(inputEvents[currentT][firstVessel]->loc, inputEvents[currentT][secVessel]->loc);
-					double r = max(inputEvents[currentT][firstVessel]->r, inputEvents[currentT][secVessel]->r);
+				double dist = Util::distance(inputEvents[currentT][firstVessel]->loc, inputEvents[currentT][secVessel]->loc);
+				double r = max(inputEvents[currentT][firstVessel]->r, inputEvents[currentT][secVessel]->r);
 #ifdef SHOW_WARN
-					if (dist <= r) {
-						hybridResult[currentT].push_back(make_pair(inputEvents[currentT][firstVessel]->id, inputEvents[currentT][secVessel]->id));
-					}
+				if (dist <= r) {
+					hybridResult[currentT].push_back(make_pair(inputEvents[currentT][firstVessel]->id, inputEvents[currentT][secVessel]->id));
+				}
 #endif // SHOW_WARN
-				//}
 			}
 		}
 
@@ -218,7 +215,6 @@ void newHybridMethod() {
 #endif
 #pragma endregion
 		currentT++;
-		//updateVesselLoc();
 	}
 	cout << " Total duration " << total << endl;
 	ourVessels = buVessels;
@@ -231,11 +227,12 @@ int main()
 	Util::maxT = MAX_T;
 	Util::interval = I;
 	Util::importObjData(inputEvents, numOfObj);
-
+	
+	//treeOnlyMethod();
+	//naiveMethod();
 	newHybridMethod();
-	naiveMethod();
 	//refineAISData();
-	Util::exportResult(naiveResult, TPRResult, hybridResult);
+	Util::exportResult(naiveResult, treeOnlyResult, hybridResult);
 }
 
 //
