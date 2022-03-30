@@ -39,8 +39,6 @@ public:
 	double r;
 	Point loc;
 	Point* extLoc;
-	Point left;
-	Point right;
 	bool filtered = false;
 	bool isCandidate = false;
 	bool isCollide = false;

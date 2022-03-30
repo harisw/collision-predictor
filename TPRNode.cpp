@@ -1227,11 +1227,6 @@ void TPRNode::freeEntryMemory()
 
 }
 
-void TPRNode::CheckOverlappingArea()
-{
-
-}
-
 void TPRNode::FindOverlappingRecursive(vector< pair<int, int> >& result)
 {
 	if (this == NULL)

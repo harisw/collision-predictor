@@ -268,8 +268,6 @@ public: // CSKIM
 	}
 
 	//Hari
-	//int (&candidateRecords)[MAX_ENTRY];
-	//int &candidateCount;
 	bool hasBufferZone = false;
 	double m_MaxBufferRadius;
 	void setMaxBufferRadius(double _maxR) {
@@ -279,8 +277,5 @@ public: // CSKIM
 		return m_MaxBufferRadius;
 	}
 	void FindOverlappingRecursive(vector< pair<int, int> >& result);
-	void CheckOverlappingArea();
-	bool m_HasOverlap = false;
-	/*vector<int> overlappingID;*/
 	vector< pair<int, int> > overlappingPairs;
 };

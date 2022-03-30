@@ -33,12 +33,4 @@ EventPtr::EventPtr(int _t, int _id, double _vx, double _vy, double _x, double _y
 
 void EventPtr::predictLoc(int futureT) {
 	extLoc = new Point(loc.x + ((double)futureT * vx), loc.y + ((double)futureT * vy));
-	if (loc.x < extLoc->x) {
-		left = loc;
-		right = *extLoc;
-	}
-	else {
-		left = *extLoc;
-		right = loc;
-	}
 }
